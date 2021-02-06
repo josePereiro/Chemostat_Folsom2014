@@ -1,0 +1,110 @@
+Enzyme	Molar mass (g/mol)	Turnover (1/s)	ai/xi (h g / mmol)
+carbonyl reductase (NADPH)	32000	1.58E+2	1.40E-5
+alcohol dehydrogenase (NADP+)	49630	1.41E+0	2.42E-3
+quinate/shikimate dehydrogenase	64000	7.23E-2	6.10E-2
+malate dehydrogenase (decarboxylating)	330000	6.17E+2	3.70E-5
+3alpha-hydroxysteroid dehydrogenase (B-specific)	47000	6.73E+1	4.80E-5
+2-hydroxy-3-oxopropionate reductase	91000	2.43E+2	2.60E-5
+glucose dehydrogenase (acceptor)	86000	5.33E+3	1.00E-6
+cellobiose dehydrogenase (acceptor)	95000	1.31E+1	5.01E-4
+peroxidase	85000	9.00E-6	6.54E+2
+catechol 2,3-dioxygenase	36000	9.78E+1	2.50E-5
+arachidonate 8-lipoxygenase	88000	2.88E+1	2.11E-4
+calcidiol 1-monooxygenase	55000	7.33E-2	5.17E-2
+nitric-oxide synthase	175000	8.65E-1	1.39E-2
+phenylalanine 4-monooxygenase	31000	3.00E+0	7.12E-4
+tryptophan 5-monooxygenase	225000	2.79E-1	5.57E-2
+Carboxylate reductase	105000	3.53E+2	2.00E-5
+arsenate reductase (donor)	123000	1.44E+4	1.00E-6
+biliverdin reductase	34000	3.65E+0	6.42E-4
+15-oxoprostaglandin 13-oxidase	55500	7.00E-1	5.47E-3
+coproporphyrinogen oxidase	76000	1.60E+1	3.27E-4
+long-chain-acyl-CoA dehydrogenase	172000	1.67E+0	7.10E-3
+butyryl-CoA dehydrogenase	152500	7.42E+0	1.42E-3
+acyl-CoA dehydrogenase	180000	1.17E+0	1.06E-2
+L-amino-acid oxidase	224000	1.62E+1	9.56E-4
+amine oxidase (flavin-containing)	146000	2.20E+2	4.60E-5
+methylenetetrahydrofolate reductase [NAD(P)H]	133560	9.92E+1	9.30E-5
+formyltetrahydrofolate dehydrogenase	440000	9.11E-1	3.33E-2
+sarcosine oxidase	171000	2.80E+0	4.21E-3
+nitrate reductase (NADH)	134501	4.51E+2	2.10E-5
+nitrite reductase (NO-forming)	122800	1.95E+0	4.34E-3
+nitrate reductase	487636	1.13E+2	2.96E-4
+trypanothione-disulfide reductase	100000	8.50E+1	8.10E-5
+glutathione-disulfide reductase	96000	4.54E+1	1.46E-4
+thioredoxin-disulfide reductase	116000	3.97E+1	2.02E-4
+thiol oxidase	44000	4.00E+0	7.58E-4
+nitrate reductase (cytochrome)	487636	1.13E+2	2.96E-4
+aspartate carbamoyltransferase	265000	4.17E+2	4.40E-5
+serine O-acetyltransferase	143333	6.80E-2	1.45E-1
+protein-glutamine gamma-glutamyltransferase	129503	4.68E-1	1.91E-2
+gamma-glutamyltransferase	160808	1.15E+3	1.00E-5
+citrate (Si)-synthase	269000	8.55E+1	2.17E-4
+kaempferol 3-O-galactosyltransferase	50000	6.53E+1	5.30E-5
+NAD+ ADP-ribosyltransferase	300000	5.55E-3	3.73E+0
+di-trans,poly-cis-decaprenylcistransferase	47000	4.37E-1	7.41E-3
+cystathionine gamma-synthase	160000	8.09E+1	1.36E-4
+adenosine kinase	37450	5.05E+0	5.12E-4
+glycerate kinase	40000	2.00E+2	1.40E-5
+galactokinase	55333	3.45E+0	1.11E-3
+[pyruvate dehydrogenase (acetyl-transferring)] kinase	100000	5.23E-1	1.32E-2
+guanylate kinase	25000	1.78E+2	1.00E-5
+FMN adenylyltransferase	37855	7.90E-5	3.30E+1
+tRNA adenylyltransferase	66667	1.20E+2	3.80E-5
+aryl sulfotransferase	60000	9.38E-2	4.41E-2
+aminoacyl-tRNA hydrolase	25000	2.75E+0	6.28E-4
+carboxymethylenebutenolidase	28500	5.32E+1	3.70E-5
+ubiquitin thiolesterase	110000	6.00E+0	1.26E-3
+fructose-bisphosphatase	80000	1.83E+1	3.01E-4
+[phosphorylase] phosphatase	34000	5.20E+0	4.51E-4
+phosphoglycolate phosphatase	75500	1.90E+1	2.74E-4
+protein-tyrosine-phosphatase	67443	9.09E+1	5.10E-5
+inositol-polyphosphate 5-phosphatase	57000	3.40E+2	1.20E-5
+3',5'-cyclic-GMP phosphodiesterase	201600	1.09E+3	1.30E-5
+beta-glucosidase	160000	6.67E+1	1.65E-4
+beta-glucuronidase	390000	6.91E+1	3.89E-4
+glucosylceramidase	92020	2.58E+2	2.50E-5
+cyclomaltodextrinase	63000	1.19E+0	3.65E-3
+alpha-N-arabinofuranosidase	58500	3.68E+1	1.10E-4
+purine nucleosidase	143000	3.20E+1	3.08E-4
+rRNA N-glycosylase	28500	2.04E+0	9.66E-4
+NAD+ nucleosidase	24150	5.36E+1	3.10E-5
+Xaa-Pro aminopeptidase	280000	2.44E+0	7.92E-3
+dipeptidyl-peptidase I	155000	1.39E+2	7.70E-5
+peptidyl-dipeptidase A	194667	8.97E+1	1.50E-4
+coagulation factor Xa	69333	1.16E+2	4.10E-5
+t-Plasminogen activator	70000	2.50E-3	1.93E+0
+t-Plasminogen activator	146263	2.01E+0	5.03E-3
+cathepsin B	26750	2.60E+1	7.10E-5
+envelysin	57000	1.80E+2	2.20E-5
+amidase	189733	1.97E+2	6.60E-5
+formamidase	128000	6.07E+1	1.45E-4
+arginase	71000	2.17E+2	2.30E-5
+guanidinoacetase	162667	5.41E+1	2.07E-4
+apyrase	68940	8.60E+2	6.00E-6
+phloretin hydrolase	55000	1.00E+1	3.79E-4
+Orotidine-5'-phosphate decarboxylase	48167	1.34E+2	2.50E-5
+4-Hydroxybenzoate decarboxylase	350000	3.67E+1	6.58E-4
+Threonine aldolase	170000	4.20E+1	2.79E-4
+enoyl-CoA hydratase	88663	3.57E+2	1.70E-5
+Uroporphyrinogen-III synthase	29167	1.79E+1	1.12E-4
+dihydroxy-acid dehydratase	107500	1.12E+1	6.60E-4
+pectin lyase	110250	8.30E-1	9.16E-3
+DNA-(apurinic or apyrimidinic site) lyase	22433	1.87E-2	8.25E-2
+lactoylglutathione lyase	32000	1.16E+2	1.90E-5
+guanylate cyclase	300000	2.05E+0	1.01E-2
+dTDP-4-dehydrorhamnose 3,5-epimerase	40600	3.90E+1	7.20E-5
+UDP-glucose 4-epimerase	183000	6.48E+1	1.95E-4
+Triose-phosphate isomerase	54630	8.67E+3	0.00E+0
+steroid DELTA-isomerase	22740	5.34E+3	0.00E+0
+dodecenoyl-CoA isomerase	170000	3.31E+0	3.55E-3
+Glutamate-1-semialdehyde 2,1-aminomutase	98000	4.99E-1	1.35E-2
+Chalcone isomerase	15600	1.65E+2	7.00E-6
+Chloromuconate cycloisomerase	230000	1.38E+1	1.15E-3
+Tyrosine-tRNA ligase	93500	2.11E+0	3.06E-3
+Threonine-tRNA ligase	170000	1.24E-1	9.49E-2
+Isoleucine-tRNA ligase	102000	5.38E+1	1.31E-4
+Lysine-tRNA ligase	184500	4.10E+0	3.10E-3
+formate-tetrahydrofolate ligase	143000	9.53E+0	1.03E-3
+Adenylosuccinate synthase	94625	4.38E+0	1.49E-3
+DNA ligase (NAD+)	76500	1.70E-2	3.11E-1
