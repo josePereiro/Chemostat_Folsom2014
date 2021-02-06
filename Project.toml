@@ -1,0 +1,13 @@
+name = "Chemostat_Folsom2014"
+uuid = "00d3f078-7623-4eb4-9094-80f290b0a20e"
+authors = ["josePereiro <jose.pereiro.lab@gmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.5"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
