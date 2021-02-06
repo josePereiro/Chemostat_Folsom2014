@@ -3,7 +3,7 @@ function test_fba(model, obj_ider, cost_ider = nothing; summary = false)
     ChU.tagprintln_inmw("FBA SOLUTION", 
         "\nobj_ider:         ", obj_ider,
         "\nfba obj_val:      ", ChU.av(model, fbaout, obj_ider),
-        "\nmax exp obj_val:  ", maximum(KayserData.val("D")),
+        "\nmax exp obj_val:  ", maximum(FolsomData.val("D")),
         "\ncost_ider:        ", isnothing(cost_ider) ? "Not included" : cost_ider,
         "\nfba cost_val:     ", isnothing(cost_ider) ? "Not included" : ChU.av(model, fbaout, cost_ider),
     )
@@ -16,7 +16,7 @@ function test_fba(exp::Int, model, obj_ider, cost_ider = nothing; summary = fals
     ChU.tagprintln_inmw("FBA SOLUTION", 
         "\nobj_ider:         ", obj_ider,
         "\nfba obj_val:      ", ChU.av(model, fbaout, obj_ider),
-        "\nexp obj_val:      ", KayserData.val("D", exp),
+        "\nexp obj_val:      ", FolsomData.val("D", exp),
         "\ncost_ider:        ", isnothing(cost_ider) ? "Not included" : cost_ider,
         "\nfba cost_val:     ", isnothing(cost_ider) ? "Not included" : ChU.av(model, fbaout, cost_ider),
     )

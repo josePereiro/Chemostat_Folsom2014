@@ -143,8 +143,8 @@ function _populate_bundle()
     BUNDLE["cGLC"] = Dict(
         "name" => "glucose feed concentration",
         "unit" => "gCDW/ L h",
-        "val" => BUNDLE["X"]["val"] ./ BUNDLE["D"]["val"],
-        "err" => BUNDLE["X"]["err"] #TODO: fix this
+        "val" => fill(MEDIUM["glc"], 4),
+        "err" => zeros(4)
     )
 
     BUNDLE
