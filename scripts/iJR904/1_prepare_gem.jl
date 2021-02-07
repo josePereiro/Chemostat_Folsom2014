@@ -4,6 +4,7 @@ quickactivate(@__DIR__, "Chemostat_Folsom2014")
 import MAT
 
 import SparseArrays
+
 import Chemostat_Folsom2014
 const ChF = Chemostat_Folsom2014
 
@@ -165,10 +166,9 @@ ChF.test_fba(model, iJR.BIOMASS_IDER, iJR.COST_IDER)
 
 ## -------------------------------------------------------------------
 # FVA PREPROCESSING
-compressed(model) = model |> ChU.struct_to_dict |> ChU.compressed_copy
 const BASE_MODELS = isfile(iJR.BASE_MODELS_FILE) ? 
     ChU.load_data(iJR.BASE_MODELS_FILE) : 
-    Dict("base_model" => compressed(model))
+    Dict("base_model" => ChU.compressed_model(model))
 let
     for (exp, D) in Fd.val(:D) |> enumerate
 
@@ -199,7 +199,7 @@ let
         ChF.test_fba(exp, fva_model, iJR.BIOMASS_IDER, iJR.COST_IDER)
         
         # storing
-        DAT[exp] = compressed(fva_model)
+        DAT[exp] = ChU.compressed_model(fva_model)
 
         ## -------------------------------------------------------------------
         # caching

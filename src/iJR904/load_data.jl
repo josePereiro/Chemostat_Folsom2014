@@ -11,6 +11,9 @@ function load_mets_map()
     Kd_mets_map["LAC"] = "lac_DASH_D_e"
     Kd_mets_map["PYR"] = "pyr_e"
     Kd_mets_map["SUCC"] = "succ_e"
+    Kd_mets_map["FORM"] = "for_e"
+    Kd_mets_map["O2"] = "o2_e"
+    Kd_mets_map["CO2"] = "co2_e"
     for (k, v) in Kd_mets_map
         Kd_mets_map[v] = k
     end
@@ -150,7 +153,7 @@ end
 ## ------------------------------------------------------------------
 # base model exch met map
 # A quick way to get exchages from mets and te other way around
-load_exch_met_map() = UJL.load_data(ChF.EXCH_MET_MAP_FILE; verbose=false)
+load_exch_met_map() = UJL.load_data(EXCH_MET_MAP_FILE; verbose=false)
 
 ## ------------------------------------------------------------------
 # The intakes bounds of the network are determined by the 

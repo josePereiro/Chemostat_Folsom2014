@@ -1,19 +1,17 @@
 import DrWatson: quickactivate
-quickactivate(@__DIR__, "Chemostat_Kayser2005")
+quickactivate(@__DIR__, "Chemostat_Folsom2014")
 
 @time begin
     import SparseArrays
     import Base.Threads: @threads, threadid, SpinLock
 
     #  ----------------------------------------------------------------------------
-    # Run add https://github.com/josePereiro/Chemostat_Kayser2005.jl in the Julia Pkg REPL to install the
-    # package, then you must activate the package enviroment (see README)
-    import Chemostat_Kayser2005
-    const ChK = Chemostat_Kayser2005
+    import Chemostat_Folsom2014
+    const ChF = Chemostat_Folsom2014
 
-    const iJR = ChK.iJR904
-    const Kd = ChK.KayserData # experimental data
-    const Bd = ChK.BegData    # cost data
+    const iJR = ChF.iJR904
+    const Fd = ChF.FolsomData # experimental data
+    const Bd = ChF.BegData    # cost data
 
     #  ----------------------------------------------------------------------------
     # run add "https://github.com/josePereiro/Chemostat" in the 
@@ -37,23 +35,21 @@ end
 const FBA_BOUNDED = :FBA_BOUNDEDs
 const FBA_OPEN = :FBA_OPEN
 const YIELD = :YIELD
-const EXPS = 1:13
+const EXPS = 1:4
 
 ## -----------------------------------------------------------------------------------------------
 function base_model(exp)
     BASE_MODELS = ChU.load_data(iJR.BASE_MODELS_FILE; verbose = false);
-    model_dict = BASE_MODELS["fva_models"][exp]
-    model = ChU.MetNet(;model_dict...) |> ChU.uncompressed_model
+    model = BASE_MODELS["fva_models"][exp] |> ChU.uncompressed_model
 end
 
 ## -----------------------------------------------------------------------------------------------
-
 # for method in [HOMO, EXPECTED, BOUNDED]
 LPDAT = UJL.DictTree()
 let
-    objider = iJR.KAYSER_BIOMASS_IDER
+    objider = iJR.BIOMASS_IDER
     glcider = "EX_glc_LPAREN_e_RPAREN__REV"
-    iterator = Kd.val(:D) |> enumerate |> collect 
+    iterator = Fd.val(:D) |> enumerate |> collect 
     for (exp, D) in iterator
         try 
             # prepare model
@@ -63,7 +59,7 @@ let
             ChU.invert_bkwds!(model)
             exglc_idx = ChU.rxnindex(model, glcider)
             objidx = ChU.rxnindex(model, objider)
-            exp_growth = Kd.val(:D, exp)
+            exp_growth = Fd.val(:D, exp)
             dgrowth = 0.01
             
             ChU.ub!(model, objider, exp_growth * (1 + dgrowth))
@@ -98,11 +94,11 @@ end
 ## -------------------------------------------------------------------
 # FBA
 let
-    objider = iJR.KAYSER_BIOMASS_IDER
+    objider = iJR.BIOMASS_IDER
     costider = iJR.COST_IDER
     biomass_f = 0.01
 
-    iterator = Kd.val(:D) |> enumerate |> collect 
+    iterator = Fd.val(:D) |> enumerate |> collect 
     for (exp, D) in iterator
 
         @info("Doing ", exp); println()
@@ -125,7 +121,7 @@ let
         model = ChU.fix_dims(model)
         ChU.invert_bkwds!(model)
         objidx = ChU.rxnindex(model, objider)
-        exp_growth = Kd.val("D", exp)
+        exp_growth = Fd.val("D", exp)
         ChU.ub!(model, objider, exp_growth * (1.0 + biomass_f))
         fbaout = ChLP.fba(model, objider, costider)
         fba_growth = ChU.av(model, fbaout, objider)

@@ -46,10 +46,21 @@ function _populate_table_s2()
         "val" => [0.000, 0.000, 0.001, 0.004],
         "err" => [0.000, 0.000, 0.001, 0.002],
     )
+    TABLE_S2["Yco2_glc"] = Dict(
+        "unit" => "Cmmol/Cmmol glc",
+        "val" => [0.515, 0.465, 0.514, 0.512],
+        "err" => [0.051, 0.031, 0.037, 0.047],
+    )
+
     TABLE_S2["uglc"] = Dict(
         "unit" => "Cmmol/gCDW-h",
         "val" => [9.1, 14.8, 25.5, 33.9],
         "err" => [0.68, 0.78, 1.87, 2.79],
+    )
+    TABLE_S2["uO2"] = Dict(
+        "unit" => "Cmmol/gCDW-h",
+        "val" => [4.74, 6.64, 12.68, 16.82],
+        "err" => [0.826, 0.786, 1.85, 2.93],
     )
     TABLE_S2
 end
@@ -73,52 +84,69 @@ function _populate_bundle()
     _populate_medium()
     empty!(BUNDLE)
 
+    # flxs
     BUNDLE["D"] = deepcopy(TABLE_S2["D"])
     BUNDLE["μ"] = deepcopy(TABLE_S2["μ"])
-
     BUNDLE["uGLC"] = Dict(
         # q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
         "name" => "glucose uptake rate",
         "unit" => "mmol/gCDW h",
-        "val" => TABLE_S2["uglc"]["val"] ./ 6,
+        "val" => -TABLE_S2["uglc"]["val"] ./ 6,
         "err" => TABLE_S2["uglc"]["err"] ./ 6,
     )
+    BUNDLE["uO2"] = Dict(
+        # q[mmol/gCDW-h]
+        "name" => "oxigen uptake rate",
+        "unit" => "mmol/gCDW h",
+        "val" => -TABLE_S2["uO2"]["val"],
+        "err" => TABLE_S2["uO2"]["err"]
+    )
     
+    # yields
+    # qglc[Cmmol/gCDW-h]
     qglc = TABLE_S2["uglc"]["val"]
+
     BUNDLE["uPYR"] = Dict(
-        # Y[Cmmol/Cmmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
+        # Y[Cmol/Cmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
         "name" => "pyruvate production rate",
         "unit" => "mmol/gCDW h",
-        "val" => TABLE_S2["Ypyr_glc"]["val"] ./ qglc ./ 3,
-        "err" => TABLE_S2["Ypyr_glc"]["err"] ./ qglc ./ 3,
+        "val" => TABLE_S2["Ypyr_glc"]["val"] .* qglc ./ 3,
+        "err" => TABLE_S2["Ypyr_glc"]["err"] .* qglc ./ 3,
     )
     BUNDLE["uSUCC"] = Dict(
-        # Y[Cmmol/Cmmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
+        # Y[Cmol/Cmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
         "name" => "succinate production rate",
         "unit" => "mmol/gCDW h",
-        "val" => TABLE_S2["Ysucc_glc"]["val"] ./ qglc ./ 4,
-        "err" => TABLE_S2["Ysucc_glc"]["err"] ./ qglc ./ 4,
+        "val" => TABLE_S2["Ysucc_glc"]["val"] .* qglc ./ 4,
+        "err" => TABLE_S2["Ysucc_glc"]["err"] .* qglc ./ 4,
     )
     BUNDLE["uLAC"] = Dict(
-        # Y[Cmmol/Cmmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
+        # Y[Cmol/Cmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
         "name" => "lactate production rate",
         "unit" => "mmol/gCDW h",
-        "val" => TABLE_S2["Ylac_glc"]["val"] ./ qglc ./ 3,
-        "err" => TABLE_S2["Ylac_glc"]["err"] ./ qglc ./ 3,
+        "val" => TABLE_S2["Ylac_glc"]["val"] .* qglc ./ 3,
+        "err" => TABLE_S2["Ylac_glc"]["err"] .* qglc ./ 3,
     )
     BUNDLE["uFORM"] = Dict(
-        # Y[Cmmol/Cmmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
+        # Y[Cmol/Cmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
         "name" => "formate production rate",
         "unit" => "mmol/gCDW h",
-        "val" => TABLE_S2["Yform_glc"]["val"] ./ qglc ./ 1,
-        "err" => TABLE_S2["Yform_glc"]["err"] ./ qglc ./ 1,
+        "val" => TABLE_S2["Yform_glc"]["val"] .* qglc ./ 1,
+        "err" => TABLE_S2["Yform_glc"]["err"] .* qglc ./ 1,
     )
     BUNDLE["uAC"] = Dict(
-        # Y[Cmmol/Cmmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
+        # Y[Cmol/Cmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
         "name" => "acetate production rate",
         "unit" => "mmol/gCDW h",
-        "val" => TABLE_S2["Yac_glc"]["val"] ./ qglc ./ 2,
-        "err" => TABLE_S2["Yac_glc"]["err"] ./ qglc ./ 2,
+        "val" => TABLE_S2["Yac_glc"]["val"] .* qglc ./ 2,
+        "err" => TABLE_S2["Yac_glc"]["err"] .* qglc ./ 2,
+    )
+    BUNDLE["uCO2"] = Dict(
+        # Y[Cmol/Cmol] * qglc[Cmmol/gCDW-h] = q[Cmmol/gCDW-h] / #C = q[mmol/gCDW-h]
+        "name" => "acetate production rate",
+        "unit" => "mmol/gCDW h",
+        "val" => TABLE_S2["Yco2_glc"]["val"] .* qglc ./ 1,
+        "err" => TABLE_S2["Yco2_glc"]["err"] .* qglc ./ 1,
     )
 
     # There negigeble glucose present in the medium at steady state 
@@ -127,7 +155,7 @@ function _populate_bundle()
         # c[mmol/L] * D[1/h] / q[mmol/gCDW h] = X[gCDW/L]
         "name" => "cell concentration",
         "unit" => "gCDW/ L",
-        "val" => MEDIUM["glc"] .* BUNDLE["D"]["val"] ./ BUNDLE["uGLC"]["val"],
+        "val" => abs.(MEDIUM["glc"] .* BUNDLE["D"]["val"] ./ BUNDLE["uGLC"]["val"]),
         "err" => zero(BUNDLE["uGLC"]["err"]) #TODO: fix this
     )
 
