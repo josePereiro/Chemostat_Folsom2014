@@ -39,7 +39,7 @@ end
 
 ## -----------------------------------------------------------------------------------------------
 LPDAT = ChU.load_data(iJR.LP_DAT_FILE)
-const FBA_BOUNDED = :FBA_BOUNDEDs
+const FBA_BOUNDED = :FBA_BOUNDED
 const FBA_OPEN = :FBA_OPEN
 const YIELD = :YIELD
 
@@ -134,9 +134,12 @@ let
 end
 
 ## -----------------------------------------------------------------------------------------------
-iJR.load_exch_met_map()["for_e"]
-## -----------------------------------------------------------------------------------------------
 # correlations
+DAT = UJL.DictTree()
+DAT[:FLX_IDERS] = FLX_IDERS
+DAT[:EXPS] = EXPS
+
+## -----------------------------------------------------------------------------------------------
 FLX_IDERS_MAP = Dict(
     "GLC" => "EX_glc_LPAREN_e_RPAREN__REV",
     "AC" => "EX_ac_LPAREN_e_RPAREN_",
@@ -145,8 +148,7 @@ FLX_IDERS_MAP = Dict(
     "SUCC" => "EX_succ_LPAREN_e_RPAREN_",
     "FORM" => "EX_for_LPAREN_e_RPAREN_",
     "O2" => "EX_o2_LPAREN_e_RPAREN__REV",
-    "CO2" => "EX_co2_LPAREN_e_RPAREN_",
-    "D" => iJR.BIOMASS_IDER,
+    "CO2" => "EX_co2_LPAREN_e_RPAREN_"
 )
     
 ## -----------------------------------------------------------------------------------------------
@@ -157,13 +159,11 @@ let
     bounded_fba_p = plot(title = "bounded fba tot corrs"; xlabel = "exp flx", ylabel = "model flx")
     margin, m, M = -Inf, Inf, -Inf
     for (Fd_ider, model_ider) in FLX_IDERS_MAP
-        Fd_fun = Fd_ider == "D" ? Fd.val : Fd.uval
-        Fd_errf = Fd_ider == "D" ? Fd.err : Fd.uerr
         for exp in EXPS
 
                 color = ider_colors[Fd_ider]
-                Fd_flx = abs(Fd_fun(Fd_ider, exp)) 
-                Fd_err = abs(Fd_errf(Fd_ider, exp)) 
+                Fd_flx = abs(Fd.uval(Fd_ider, exp)) 
+                Fd_err = abs(Fd.uerr(Fd_ider, exp)) 
                 
                 # yield
                 model = LPDAT[YIELD, :model, exp]
@@ -171,8 +171,12 @@ let
 
                 ymax_flx = ChU.av(model, yout, model_ider)
                 diffsign = sign(Fd_flx) * sign(ymax_flx)
+                diffsign = ifelse.(diffsign .== 0, 1.0, diffsign)
                 Fd_vals = abs(Fd_flx) * diffsign
                 ep_vals = abs(ymax_flx) * diffsign
+
+                DAT[YIELD, :Fd, :flx, Fd_ider, exp] = Fd_flx
+                DAT[YIELD, :lp, :flx, Fd_ider, exp] = ymax_flx
 
                 scatter!(yield_p, [Fd_flx], [ymax_flx]; ms = 8,
                     xerr = [Fd_err],
@@ -187,6 +191,8 @@ let
                     fbaout = LPDAT[fba_type, :fbaout, exp]
                     
                     fba_flx = ChU.av(model, fbaout, model_ider)
+                    DAT[fba_type, :Fd, :flx, Fd_ider, exp] = Fd_flx
+                    DAT[fba_type, :lp, :flx, Fd_ider, exp] = fba_flx
                     scatter!(p, [Fd_flx], [fba_flx]; ms = 8,
                         xerr = [Fd_err],
                         color, alpha = 0.6, label = ""
@@ -207,6 +213,14 @@ let
     pname = "flx_tot_corr"
     layout = (1, 3)
     mysavefig(ps, pname; layout)
+end
+
+## -------------------------------------------------------------------
+# Inter project comunication
+let
+    CORR_DAT = isfile(iJR.CORR_DAT_FILE) ? ChU.load_data(iJR.CORR_DAT_FILE) : Dict()
+    CORR_DAT[:LP] = DAT
+    ChU.save_data(iJR.CORR_DAT_FILE, CORR_DAT)
 end
 
 ## -------------------------------------------------------------------

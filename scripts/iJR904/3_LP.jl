@@ -32,7 +32,7 @@ quickactivate(@__DIR__, "Chemostat_Folsom2014")
 end
 
 ## -----------------------------------------------------------------------------------------------
-const FBA_BOUNDED = :FBA_BOUNDEDs
+const FBA_BOUNDED = :FBA_BOUNDED
 const FBA_OPEN = :FBA_OPEN
 const YIELD = :YIELD
 const EXPS = 1:4
