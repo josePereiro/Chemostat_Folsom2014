@@ -27,7 +27,7 @@ quickactivate(@__DIR__, "Chemostat_Folsom2014")
     const UJL = UtilsJL
     using Serialization
     using Base.Threads
-    UJL.set_cache_dir(UJL.set_cache_dir())
+    UJL.set_cache_dir(iJR.MODEL_CACHE_DIR)
 end
 
 ## ----------------------------------------------------------------------------
