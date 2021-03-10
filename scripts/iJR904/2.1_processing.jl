@@ -44,12 +44,16 @@ end
 ## -------------------------------------------------------------------
 INDEX = ChU.load_data(iJR.MAXENT_VARIANTS_INDEX_FILE; verbose = false);
 
-## -------------------------------------------------------------------
-const HOMO = :HOMO
-const BOUNDED = :BOUNDED
-const EXPECTED = :EXPECTED
+# -------------------------------------------------------------------
+const ME_Z_OPEN_G_OPEN        = :ME_Z_OPEN_G_OPEN
+const ME_Z_EXPECTED_G_MOVING  = :ME_Z_EXPECTED_G_MOVING  
+const ME_Z_FIXXED_G_BOUNDED   = :ME_Z_FIXXED_G_BOUNDED
+const ME_Z_EXPECTED_G_BOUNDED = :ME_Z_EXPECTED_G_BOUNDED
 
-## -------------------------------------------------------------------
+ALL_MODELS = [ME_Z_OPEN_G_OPEN, ME_Z_EXPECTED_G_MOVING, 
+    ME_Z_FIXXED_G_BOUNDED, ME_Z_EXPECTED_G_BOUNDED]
+
+# -------------------------------------------------------------------
 fileid = "2.1"
 function mysavefig(p, pname; params...) 
     fname = UJL.mysavefig(p, string(fileid, "_", pname), iJR.MODEL_FIGURES_DIR; params...)
@@ -71,82 +75,106 @@ ider_colors = let
     Dict(ider => color for (ider, color) in zip(iders, colors))
 end
 
-
 method_colors = Dict(
-    HOMO => :red,
-    BOUNDED => :orange,
-    EXPECTED => :blue,
+    ME_Z_OPEN_G_OPEN => :red,
+    ME_Z_FIXXED_G_BOUNDED => :orange,
+    ME_Z_EXPECTED_G_MOVING => :purple,
+    ME_Z_EXPECTED_G_BOUNDED => :blue,
 )
 
 ## -------------------------------------------------------------------
 # Collect
 DAT = ChU.DictTree()
 let 
+    
+    DATfile = joinpath(iJR.MODEL_PROCESSED_DATA_DIR, "2.1_DAT.jls")
+    # CACHE
+    if isfile(DATfile) 
+        global DAT = deserialize(DATfile) 
+        @info("DAT CACHE LOADED")
+        return
+    end
+
     objider = iJR.BIOMASS_IDER
     DAT[:FLX_IDERS] = FLX_IDERS
-    DAT[:EXPS] = EXPS
+    DAT[:EXPS] = []
 
     exch_met_map = iJR.load_exch_met_map()
     Fd_mets_map = iJR.load_mets_map()
 
-    for method in [HOMO, EXPECTED, BOUNDED]
-        for exp in EXPS
+    # Find exps
+    for exp in 1:13
+        ok = false
+        for method in ALL_MODELS
+            ok = haskey(INDEX, method, :DFILE, exp) &&
+                INDEX[method, :DFILE, exp] != :unfeasible
+            !ok && break
+        end
+        !ok && continue
+        push!(DAT[:EXPS], exp)
+    end
+
+    for exp in DAT[:EXPS], method in ALL_MODELS
             
-            # !haskey(INDEX, method, :DFILE, exp) && continue
-            datfile = INDEX[method, :DFILE, exp]
-            dat = deserialize(datfile)
-            
-            model = dat[:model]
-            objidx = ChU.rxnindex(model, objider)
-            epouts = dat[:epouts]
-            exp_beta = maximum(keys(epouts))
-            epout = epouts[exp_beta]
-            exp_xi = Fd.val(:xi, exp)
+        # !haskey(INDEX, method, :DFILE, exp) && continue
+        datfile = INDEX[method, :DFILE, exp]
+        dat = deserialize(datfile)
+        
+        model = dat[:model]
+        objidx = ChU.rxnindex(model, objider)
+        epouts = dat[:epouts]
+        exp_beta = maximum(keys(epouts))
+        epout = epouts[exp_beta]
+        exp_xi = Fd.val(:xi, exp)
 
-            println()
-            @info("Doing", exp, method, length(dat[:epouts]), epout.iter);
+        println()
+        @info("Doing", exp, method, length(dat[:epouts]), epout.iter);
 
-            # Biomass
-            ep_biom = ChU.av(model, epout, objidx)
-            ep_std = sqrt(ChU.va(model, epout, objidx))
-            Fd_biom = Fd.val("D", exp)
-            Fd_biom_err = Fd.err("D", exp)
-            
-            # store
-            DAT[method, :ep   , :flx, objider, exp] = ep_biom
-            DAT[method, :eperr, :flx, objider, exp] = ep_std
-            DAT[method, :Fd   , :flx, objider, exp] = Fd_biom
-            DAT[method, :Fderr, :flx, objider, exp] = Fd_biom_err
-            DAT[:Fd   , :flx, objider, exp] = Fd_biom
-            DAT[:Fderr, :flx, objider, exp] = Fd_biom_err
-            DAT[method, :fva  , :flx, objider, exp] = ChU.bounds(model, objider)
-            
-            # fuxes
-            for Fd_met in FLX_IDERS
+        # Biomass
+        ep_biom = ChU.av(model, epout, objidx)
+        ep_std = sqrt(ChU.va(model, epout, objidx))
+        Fd_biom = Fd.val("D", exp)
+        Fd_biom_err = Fd.err("D", exp)
+        
+        # store
+        DAT[method, :ep   , :flx, objider, exp] = ep_biom
+        DAT[method, :eperr, :flx, objider, exp] = ep_std
+        DAT[method, :Fd   , :flx, objider, exp] = Fd_biom
+        DAT[method, :Fderr, :flx, objider, exp] = Fd_biom_err
+        DAT[:Fd   , :flx, objider, exp] = Fd_biom
+        DAT[:Fderr, :flx, objider, exp] = Fd_biom_err
+        DAT[method, :fva  , :flx, objider, exp] = ChU.bounds(model, objider)
+        
+        # fluxes
+        for Fd_met in FLX_IDERS
 
-                    model_met = Fd_mets_map[Fd_met]
-                    model_exch = exch_met_map[model_met]
-                    model_exchi = ChU.rxnindex(model, model_exch)
+                model_met = Fd_mets_map[Fd_met]
+                model_exch = exch_met_map[model_met]
+                model_exchi = ChU.rxnindex(model, model_exch)
 
-                    ep_av = ChU.av(model, epout, model_exchi)
-                    ep_std = sqrt(ChU.va(model, epout, model_exchi))
-                    Fd_flx = Fd.val("u$Fd_met", exp)
-                    Fd_err = Fd.err("u$Fd_met", exp)
-                    
-                    DAT[method, :Fd, :flx, Fd_met, exp] = Fd_flx
-                    DAT[method, :Fderr, :flx, Fd_met, exp] = Fd_err
-                    DAT[:Fd, :flx, Fd_met, exp] = Fd_flx
-                    DAT[:Fderr, :flx, Fd_met, exp] = Fd_err
-                    DAT[method, :ep, :flx, Fd_met, exp] = ep_av
-                    DAT[method, :eperr, :flx, Fd_met, exp] = ep_std
-                    
-                    DAT[method, :fva , :flx, Fd_met, exp] = ChU.bounds(model, model_exch)
+                proj = ChLP.projection2D(model, objider, model_exchi; l = 50)
+                ep_av = ChU.av(model, epout, model_exchi)
+                ep_std = sqrt(ChU.va(model, epout, model_exchi))
+                Fd_flx = Fd.val("u$Fd_met", exp)
+                Fd_err = Fd.err("u$Fd_met", exp)
+                
+                DAT[method, :ep, :proj, Fd_met, exp] = proj
+                DAT[method, :Fd, :flx, Fd_met, exp] = Fd_flx
+                DAT[method, :Fderr, :flx, Fd_met, exp] = Fd_err
+                DAT[:Fd, :flx, Fd_met, exp] = Fd_flx
+                DAT[:Fderr, :flx, Fd_met, exp] = Fd_err
+                DAT[method, :ep, :flx, Fd_met, exp] = ep_av
+                DAT[method, :eperr, :flx, Fd_met, exp] = ep_std
+                
+                DAT[method, :fva , :flx, Fd_met, exp] = ChU.bounds(model, model_exch)
 
-            end # for Fd_met
+        end # for Fd_met
+    end # for exp in EXPS, for method
 
-        end # for exp in EXPS
-    end # for method
-end
+    DAT[:EXPS] |> unique! |> sort!
+    serialize(DATfile, DAT)
+end;
+EXPS = DAT[:EXPS]
 
 ## -------------------------------------------------------------------
 # Inter project comunication
@@ -157,9 +185,75 @@ let
 end
 
 ## -------------------------------------------------------------------
+# proj 2D
+let
+    method = ME_Z_EXPECTED_G_MOVING
+    biom_ider = iJR.BIOMASS_IDER
+
+    ps_pool = Dict()
+    for exp in EXPS
+
+        datfile = INDEX[method, :DFILE, exp]
+        dat = deserialize(datfile)
+            
+        model = dat[:model]
+        
+
+        for Fd_ider in FLX_IDERS
+
+            # 2D Projection
+            p = plot(;title = string("Folsom2014, exp: ", exp), 
+                xlabel = string(biom_ider), ylabel = string(Fd_ider),
+                legend = :left
+            )
+            proj = DAT[method, :ep, :proj, Fd_ider, exp]
+            ChP.plot_projection2D!(p, proj; l = 50)
+
+            # cgD/X
+            input = -Fd.cval(Fd_ider, exp, 0.0) * Fd.val(:D, exp) / Fd.val(:X, exp)
+            hline!(p, [input]; lw = 3, color = :black, ls = :solid, label = "input")
+
+            # EXPERIMENTAL FLXS
+            exp_biom = DAT[method, :Fd, :flx, biom_ider, exp]
+            exp_biom_err = DAT[method, :Fderr, :flx, biom_ider, exp]
+            exp_exch = DAT[method, :Fd, :flx, Fd_ider, exp]
+            exp_exch_err = DAT[method, :Fderr, :flx, Fd_ider, exp]
+            scatter!(p, [exp_biom], [exp_exch]; 
+                xerr = [exp_biom_err], yerr = [exp_exch_err],
+                m = 8, color = :red, label = "exp"
+            )
+            
+            # MAXENT FLXS
+            ep_biom = DAT[method, :ep, :flx, biom_ider, exp]
+            ep_biom_err = DAT[method, :eperr, :flx, biom_ider, exp]
+            ep_exch = DAT[method, :ep, :flx, Fd_ider, exp]
+            ep_exch_err = DAT[method, :eperr, :flx, Fd_ider, exp]
+            scatter!(p, [ep_biom], [ep_exch];
+                xerr = [ep_biom_err], yerr = [ep_exch_err],
+                m = 8, color = :blue, label = "maxent"
+            )
+
+            # mysavefig(p, "polytope"; Fd_ider, exp, method)
+            ps_pool[(exp, Fd_ider)] = deepcopy(p)
+        end
+    end
+
+    # collect 
+    for exp in EXPS
+        ps = Plots.Plot[ps_pool[(exp, Fd_ider)] for Fd_ider in FLX_IDERS]
+        mysavefig(ps, "polytope"; exp, method)
+    end
+
+    for Fd_ider in FLX_IDERS
+        ps = Plots.Plot[ps_pool[(exp, Fd_ider)] for exp in EXPS]
+        mysavefig(ps, "polytope"; Fd_ider, method)
+    end
+end
+
+## -------------------------------------------------------------------
 # beta vs stuff
 let
-    method = EXPECTED
+    method = ME_Z_EXPECTED_G_MOVING
     cGLC_plt = plot(;xlabel = "cGLC", ylabel = "beta")
     D_plt = plot(;xlabel = "D", ylabel = "beta")
     for exp in EXPS 
@@ -183,7 +277,7 @@ end
 let
     objider = iJR.BIOMASS_IDER
     ps = Plots.Plot[]
-    for method in [HOMO, EXPECTED, BOUNDED]
+    for method in ALL_MODELS
         p = plot(title = string(iJR.PROJ_IDER, " method: ", method), 
             xlabel = "model biom", ylabel = "exp biom")
         ep_vals = DAT[method, :ep, :flx, objider, EXPS]
@@ -208,10 +302,10 @@ let
 end
 
 ## -------------------------------------------------------------------
-# EXPECTED flux vs beta
+# flux vs beta
 let
     objider = iJR.BIOMASS_IDER
-    method = EXPECTED
+    method = ME_Z_EXPECTED_G_MOVING
     p = plot(title = iJR.PROJ_IDER, xlabel = "beta", ylabel = "biom")
     for exp in EXPS 
         datfile = INDEX[method, :DFILE, exp]
@@ -240,7 +334,7 @@ let
     
     tot_ps = Plots.Plot[]
     zoom_ps = Plots.Plot[]
-    for method in [HOMO, EXPECTED, BOUNDED]                                       
+    for method in ALL_MODELS                                       
         ep_vals = DAT[method, :ep, dat_prefix, iders, EXPS]
         ep_errs = DAT[method, :eperr, dat_prefix, iders, EXPS]
         Fd_vals = DAT[method, :Fd, dat_prefix, iders, EXPS]
@@ -293,7 +387,7 @@ let
         plot!(p, EXPS, Fd_vals; 
             label = "exp", color = :black, alpha = 0.8, lw = 3, xticks)
 
-        for method in [HOMO, EXPECTED, BOUNDED]             
+        for method in [ME_Z_OPEN_G_OPEN, ME_Z_EXPECTED_G_BOUNDED, ME_Z_FIXXED_G_BOUNDED]             
             color = method_colors[method]    
             
             ep_vals = DAT[method, :ep, :flx, ider, EXPS]
@@ -340,7 +434,7 @@ let
             Fd_av = Fd.val(Fd_ider, exp)
             
             # EP
-            for method in [BOUNDED, EXPECTED, HOMO]
+            for method in [ME_Z_FIXXED_G_BOUNDED, ME_Z_EXPECTED_G_BOUNDED, ME_Z_OPEN_G_OPEN]
                 color = method_colors[method]    
 
                 datfile = INDEX[method, :DFILE, exp]
@@ -360,7 +454,7 @@ let
                 M = maximum([M, ep_av, Fd_av])
                 margin = maximum([margin, 3 * ep_va])
 
-                if method == EXPECTED
+                if method == ME_Z_EXPECTED_G_BOUNDED
                     for (beta, epout) in sort(epouts; by = first)
                         ep_av = ChU.av(model, epout, model_ider)
                         ep_va = sqrt(ChU.va(model, epout, model_ider))
@@ -403,7 +497,7 @@ let
         pname = string(Fd_ider, "_marginals")
         mysavefig(ps, pname)
 
-        method = EXPECTED
+        method = ME_Z_EXPECTED_G_BOUNDED
         pname = string(Fd_ider, "_marginals_vs_beta")
         mysavefig(ps_bs, pname; method)
     end
@@ -432,7 +526,7 @@ let
 
         epps = Plots.Plot[]
         exps = Plots.Plot[]
-        for method in [BOUNDED, EXPECTED, HOMO]
+        for method in [ME_Z_FIXXED_G_BOUNDED, ME_Z_EXPECTED_G_BOUNDED, ME_Z_OPEN_G_OPEN]
             expp = plot(;title = string("Experimental"), marg_params...)
             epp = plot(;title = string(" MaxEnt: ", method), marg_params...)
             margin, m, M = -Inf, Inf, -Inf
