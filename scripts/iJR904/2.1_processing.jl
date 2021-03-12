@@ -50,8 +50,8 @@ const ME_Z_EXPECTED_G_MOVING  = :ME_Z_EXPECTED_G_MOVING
 const ME_Z_FIXXED_G_BOUNDED   = :ME_Z_FIXXED_G_BOUNDED
 const ME_Z_EXPECTED_G_BOUNDED = :ME_Z_EXPECTED_G_BOUNDED
 
-ALL_MODELS = [ME_Z_OPEN_G_OPEN, ME_Z_EXPECTED_G_MOVING, 
-    ME_Z_FIXXED_G_BOUNDED, ME_Z_EXPECTED_G_BOUNDED]
+ALL_MODELS = [ME_Z_OPEN_G_OPEN, ME_Z_FIXXED_G_BOUNDED, 
+    ME_Z_EXPECTED_G_BOUNDED, ME_Z_EXPECTED_G_MOVING]
 
 # -------------------------------------------------------------------
 fileid = "2.1"
@@ -197,8 +197,6 @@ let
         dat = deserialize(datfile)
             
         model = dat[:model]
-        
-
         for Fd_ider in FLX_IDERS
 
             # 2D Projection
@@ -279,7 +277,7 @@ let
     ps = Plots.Plot[]
     for method in ALL_MODELS
         p = plot(title = string(iJR.PROJ_IDER, " method: ", method), 
-            xlabel = "model biom", ylabel = "exp biom")
+            xlabel = "exp biom", ylabel = "model biom")
         ep_vals = DAT[method, :ep, :flx, objider, EXPS]
         eperr_vals = DAT[method, :eperr, :flx, objider, EXPS]
         Fd_vals = DAT[method, :Fd, :flx, objider, EXPS]
@@ -287,9 +285,9 @@ let
         color = [exp_colors[exp] for exp in EXPS]
         m, M = myminmax([Fd_vals; ep_vals])
         margin = abs(M - m) * 0.1
-        scatter!(p, ep_vals, Fd_vals; 
-            xerr = eperr_vals,
-            yerr = Kderr_vals,
+        scatter!(p, Fd_vals, ep_vals; 
+            xerr = Kderr_vals,
+            yerr = eperr_vals,
             label = "", color,
             alpha = 0.7, ms = 7,
             xlim = [m - margin, M + margin],
@@ -352,8 +350,8 @@ let
         scatter_params = (;label = "", color, ms = 7, alpha = 0.7)
         # ep corr
         p1 = plot(title = "$(iJR.PROJ_IDER) (EP) $method", 
-            ylabel = "model signdiff $(dat_prefix)",
             xlabel = "exp signdiff $(dat_prefix)", 
+            ylabel = "model signdiff $(dat_prefix)",
         )
         scatter!(p1, Fd_vals, ep_vals; yerr = ep_errs, xerr = Fd_errs, scatter_params...)
         plot!(p1, [m,M], [m,M]; ls = :dash, color = :black, label = "")

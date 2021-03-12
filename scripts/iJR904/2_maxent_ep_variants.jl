@@ -216,7 +216,9 @@ let
                 
                 ## -------------------------------------------------------------------
                 # INFO AND CONV
-                conv = cgD_X <= vg_avPME && epout.status == ChEP.CONVERGED_STATUS
+                ep_growth = ChU.av(model, epout, iJR.BIOMASS_IDER)
+                gd_err = abs(exp_growth - ep_growth) / exp_growth
+                conv = cgD_X <= vg_avPME && epout.status == ChEP.CONVERGED_STATUS && gd_err < gd_th
                 
                 lock(WLOCK) do
                     @info("Round Done", 
@@ -256,6 +258,69 @@ let
 
         end # for (exp, cGLC) in Ch
     end # for thid in 1:nthreads()
+end
+
+## -------------------------------------------------------------------
+# Further convergence
+let
+    method = ME_Z_EXPECTED_G_MOVING
+
+    iterator = Fd.val("cGLC") |> enumerate |> collect
+    @threads for (exp, cGLC) in iterator
+
+        datfile = INDEX[method, :DFILE, exp]
+        datfile == :unfeasible && continue
+        dat = deserialize(datfile)
+        model, epouts = ChU.uncompressed_model(dat[:model]) , dat[:epouts]
+
+        exp_growth = Fd.val(:D, exp)
+        exp_beta = dat[:exp_beta]
+        exp_epout = epouts[exp_beta]
+
+        lock(WLOCK) do
+            @info("Converging...", 
+                exp, method,
+                exp_beta, exp_epout.status, 
+                threadid()
+            ); println()
+        end
+        converg_status = get!(dat, :converg_status, :undone)
+        converg_status == :done && continue
+        
+        model = ChLP.fva_preprocess(model; verbose = false, 
+            check_obj = iJR.BIOMASS_IDER
+        )
+        
+        new_epout = nothing
+        try
+            objidx = ChU.rxnindex(model, iJR.BIOMASS_IDER)
+            beta_vec = zeros(size(model, 2)); 
+            beta_vec[objidx] = exp_beta
+            new_epout = ChEP.maxent_ep(model; 
+                beta_vec, alpha = Inf, 
+                epsconv = 1e-5, verbose = false, 
+                solution = exp_epout, maxiter = 5000
+            )
+        catch err; @warn("ERROR", err); println() end
+        
+        ep_growth = isnothing(new_epout) ? 0.0 : ChU.av(model, new_epout, iJR.BIOMASS_IDER)
+        fail = isnan(ep_growth) || ep_growth == 0.0 
+        epouts[exp_beta] = fail ? exp_epout : new_epout
+        
+        # Saving
+        lock(WLOCK) do
+            @info("Saving...", 
+                exp, method, 
+                exp_beta, 
+                new_epout.status,
+                new_epout.iter,
+                threadid()
+            ); println()
+        end
+        dat[:model] = ChU.compressed_model(model)
+        dat[:converg_status] = :done
+        serialize(datfile, dat)
+    end
 end
 
 ## ----------------------------------------------------------------------------
@@ -411,7 +476,6 @@ end
 # Further convergence
 let
     method = ME_Z_EXPECTED_G_BOUNDED
-    objider = iJR.BIOMASS_IDER
 
     iterator = Fd.val(:D) |> enumerate |> collect 
     @threads for (exp, D) in iterator
@@ -436,7 +500,7 @@ let
         new_epout = nothing
         if exp_epout.status == :unconverged
             try;
-                objidx = ChU.rxnindex(model, objider)
+                objidx = ChU.rxnindex(model, iJR.BIOMASS_IDER)
                 beta_vec = zeros(size(model, 2)); 
                 beta_vec[objidx] = exp_beta
                 new_epout = ChEP.maxent_ep(model; 
@@ -446,7 +510,7 @@ let
                 )
             catch err; @warn("ERROR", err); println() end
 
-            ep_growth = isnothing(new_epout) ? 0.0 : ChU.av(model, new_epout, objider)
+            ep_growth = isnothing(new_epout) ? 0.0 : ChU.av(model, new_epout, iJR.BIOMASS_IDER)
             fail = isnan(ep_growth) || ep_growth == 0.0 
             epouts[exp_beta] = fail ? exp_epout : new_epout
         end
