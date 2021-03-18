@@ -4,20 +4,37 @@
 ## ------------------------------------------------------------------
 # maps between Kayser2005 https://doi.org/10.1099/mic.0.27481-0.
 # data and the model
-function load_mets_map() 
-    Kd_mets_map = Dict()
-    Kd_mets_map["GLC"] = "glc_DASH_D_e"
-    Kd_mets_map["AC"] = "ac_e"
-    Kd_mets_map["LAC"] = "lac_DASH_D_e"
-    Kd_mets_map["PYR"] = "pyr_e"
-    Kd_mets_map["SUCC"] = "succ_e"
-    Kd_mets_map["FORM"] = "for_e"
-    Kd_mets_map["O2"] = "o2_e"
-    Kd_mets_map["CO2"] = "co2_e"
-    for (k, v) in Kd_mets_map
-        Kd_mets_map[v] = k
+function load_Fd_mets_map() 
+    Fd_mets_map = Dict()
+    Fd_mets_map["GLC"] = "glc_DASH_D_e"
+    Fd_mets_map["AC"] = "ac_e"
+    Fd_mets_map["LAC"] = "lac_DASH_D_e"
+    Fd_mets_map["PYR"] = "pyr_e"
+    Fd_mets_map["SUCC"] = "succ_e"
+    Fd_mets_map["FORM"] = "for_e"
+    Fd_mets_map["O2"] = "o2_e"
+    Fd_mets_map["CO2"] = "co2_e"
+    for (k, v) in Fd_mets_map
+        Fd_mets_map[v] = k
     end
-    return Kd_mets_map
+    return Fd_mets_map
+end
+
+# EX_glc_LPAREN_e_RPAREN_
+function load_Fd_exch_map()
+    Fd_exch_map = Dict()
+    Fd_exch_map["GLC"] = "EX_glc_LPAREN_e_RPAREN_"
+    Fd_exch_map["AC"] = "EX_ac_LPAREN_e_RPAREN_"
+    Fd_exch_map["LAC"] = "EX_lac_D_LPAREN_e_RPAREN_"
+    Fd_exch_map["PYR"] = "EX_pyr_LPAREN_e_RPAREN_"
+    Fd_exch_map["SUCC"] = "EX_succ_LPAREN_e_RPAREN_"
+    Fd_exch_map["FORM"] = "EX_for_LPAREN_e_RPAREN_"
+    Fd_exch_map["O2"] = "EX_o2_LPAREN_e_RPAREN_"
+    Fd_exch_map["CO2"] = "EX_co2_LPAREN_e_RPAREN_"
+    for (k, v) in Fd_exch_map
+        Fd_exch_map[v] = k
+    end
+    return Fd_exch_map
 end
 
 

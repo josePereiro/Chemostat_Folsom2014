@@ -50,7 +50,7 @@ const ME_Z_EXPECTED_G_MOVING  = :ME_Z_EXPECTED_G_MOVING
 const ME_Z_FIXXED_G_BOUNDED   = :ME_Z_FIXXED_G_BOUNDED
 const ME_Z_EXPECTED_G_BOUNDED = :ME_Z_EXPECTED_G_BOUNDED
 
-ALL_MODELS = [ME_Z_OPEN_G_OPEN, ME_Z_FIXXED_G_BOUNDED, 
+ALL_METHODS = [ME_Z_OPEN_G_OPEN, ME_Z_FIXXED_G_BOUNDED, 
     ME_Z_EXPECTED_G_BOUNDED, ME_Z_EXPECTED_G_MOVING]
 
 # -------------------------------------------------------------------
@@ -82,6 +82,9 @@ method_colors = Dict(
     ME_Z_EXPECTED_G_BOUNDED => :blue,
 )
 
+exch_met_map = iJR.load_exch_met_map()
+Fd_mets_map = iJR.load_mets_map()
+
 ## -------------------------------------------------------------------
 # Collect
 DAT = ChU.DictTree()
@@ -99,13 +102,10 @@ let
     DAT[:FLX_IDERS] = FLX_IDERS
     DAT[:EXPS] = []
 
-    exch_met_map = iJR.load_exch_met_map()
-    Fd_mets_map = iJR.load_mets_map()
-
     # Find exps
     for exp in 1:13
         ok = false
-        for method in ALL_MODELS
+        for method in ALL_METHODS
             ok = haskey(INDEX, method, :DFILE, exp) &&
                 INDEX[method, :DFILE, exp] != :unfeasible
             !ok && break
@@ -114,7 +114,7 @@ let
         push!(DAT[:EXPS], exp)
     end
 
-    for exp in DAT[:EXPS], method in ALL_MODELS
+    for exp in DAT[:EXPS], method in ALL_METHODS
             
         # !haskey(INDEX, method, :DFILE, exp) && continue
         datfile = INDEX[method, :DFILE, exp]
@@ -182,6 +182,124 @@ let
     CORR_DAT = isfile(iJR.CORR_DAT_FILE) ? ChU.load_data(iJR.CORR_DAT_FILE) : Dict()
     CORR_DAT[:MAXENT_EP] = DAT
     ChU.save_data(iJR.CORR_DAT_FILE, CORR_DAT)
+end
+
+## -------------------------------------------------------------------
+# MSE per method
+let
+
+    p = plot(;xlabel = "experiment", ylabel = "MSE")
+    for method in ALL_METHODS
+        MSEs = []
+        for exp in EXPS
+
+            sum = 0.0
+            N = 0
+            glc_flx = DAT[method, :Fd, :flx, "GLC", exp]
+            for ider in FLX_IDERS
+                model_val = DAT[method, :ep, :flx, ider, exp]
+                exp_val = DAT[method, :Fd, :flx, ider, exp]
+                sum += (model_val/glc_flx - exp_val/glc_flx)^2
+                N += 1
+            end
+            push!(MSEs, sum / N)
+        end
+        scatter!(p, EXPS, MSEs; color = method_colors[method],
+            label = string(method), m = 8, alpha = 0.8, 
+            legend = :topleft
+        )
+        plot!(p, EXPS, MSEs; color = method_colors[method],
+            label = "", ls = :dash, alpha = 0.8
+        )
+    end
+    mysavefig(p, "MSE_per_method")
+end
+
+## -------------------------------------------------------------------
+# MSE per ider
+let
+    p = plot(;xlabel = "experiment", ylabel = "MSE")
+    for method in ALL_METHODS
+        MSEs = []
+
+        for ider in FLX_IDERS
+            sum = 0.0
+            N = 0
+            for exp in EXPS
+                glc_flx = DAT[method, :Fd, :flx, "GLC", exp]
+                model_val = DAT[method, :ep, :flx, ider, exp]
+                exp_val = DAT[method, :Fd, :flx, ider, exp]
+                sum += (model_val/glc_flx - exp_val/glc_flx)^2
+                N += 1
+            end
+            push!(MSEs, sum / N)
+        end
+
+        scatter!(p, FLX_IDERS, MSEs; color = method_colors[method],
+            label = string(method), m = 8, alpha = 0.8, 
+            legend = :topleft
+        )
+        plot!(p, FLX_IDERS, MSEs; color = method_colors[method],
+            label = "", ls = :dash, alpha = 0.8
+        )
+    end
+    mysavefig(p, "MSE_per_ider")
+end
+
+## -------------------------------------------------------------------
+# MSE per beta
+let
+    method = ME_Z_EXPECTED_G_BOUNDED
+
+    ps = Plots.Plot[]
+    for exp in EXPS
+        p = plot(;title = string("exp: ", exp), 
+            xlabel = "beta", ylabel = "MSE"
+        )
+
+        datfile = INDEX[method, :DFILE, exp]
+        dat = deserialize(datfile)
+        epouts = dat[:epouts]
+        betas = epouts |> keys |> collect |> sort
+        exp_beta = maximum(betas) # dat[:exp_beta]
+        model = dat[:model]
+        
+        MSEs = []
+        for beta in betas
+            epout = epouts[beta]
+
+            sum = 0.0
+            N = 0
+
+            glc_flx = Fd.uval(:GLC, exp)
+            for ider in FLX_IDERS
+
+                model_met = Fd_mets_map[ider]
+                model_exch = exch_met_map[model_met]
+                model_exchi = ChU.rxnindex(model, model_exch)
+
+                model_flx = ChU.av(model, epout, model_exchi)
+                exp_flx = Fd.uval(ider, exp)
+
+                sum += (model_flx/glc_flx - exp_flx/glc_flx)^2
+                N += 1
+            end
+            
+            push!(MSEs, sum / N)
+        end
+
+        scatter!(p, betas, MSEs; color = :black,
+            label = "", m = 8, alpha = 0.8
+        )
+        plot!(p, betas, MSEs; color = :black,
+            label = "", ls = :dash, alpha = 0.8
+        )
+        vline!(p, [exp_beta]; color = :black, 
+            label = "", ls = :dot, lw = 3, alpha = 0.9
+        )
+        push!(ps, p)
+    end
+    mysavefig(ps, "MSE_vs_beta")
 end
 
 ## -------------------------------------------------------------------
@@ -275,7 +393,7 @@ end
 let
     objider = iJR.BIOMASS_IDER
     ps = Plots.Plot[]
-    for method in ALL_MODELS
+    for method in ALL_METHODS
         p = plot(title = string(iJR.PROJ_IDER, " method: ", method), 
             xlabel = "exp biom", ylabel = "model biom")
         ep_vals = DAT[method, :ep, :flx, objider, EXPS]
@@ -332,7 +450,7 @@ let
     
     tot_ps = Plots.Plot[]
     zoom_ps = Plots.Plot[]
-    for method in ALL_MODELS                                       
+    for method in ALL_METHODS                                       
         ep_vals = DAT[method, :ep, dat_prefix, iders, EXPS]
         ep_errs = DAT[method, :eperr, dat_prefix, iders, EXPS]
         Fd_vals = DAT[method, :Fd, dat_prefix, iders, EXPS]
@@ -432,7 +550,7 @@ let
             Fd_av = Fd.val(Fd_ider, exp)
             
             # EP
-            for method in [ME_Z_FIXXED_G_BOUNDED, ME_Z_EXPECTED_G_BOUNDED, ME_Z_OPEN_G_OPEN]
+            for method in ALL_METHODS
                 color = method_colors[method]    
 
                 datfile = INDEX[method, :DFILE, exp]
@@ -452,7 +570,7 @@ let
                 M = maximum([M, ep_av, Fd_av])
                 margin = maximum([margin, 3 * ep_va])
 
-                if method == ME_Z_EXPECTED_G_BOUNDED
+                if method == ME_Z_EXPECTED_G_MOVING
                     for (beta, epout) in sort(epouts; by = first)
                         ep_av = ChU.av(model, epout, model_ider)
                         ep_va = sqrt(ChU.va(model, epout, model_ider))
@@ -492,10 +610,21 @@ let
             push!(ps_bs, p)
         end
 
+        # legend
+        p = plot(;title = "Legend", size)
+        for (method, color) in method_colors
+            color = method_colors[method]
+            bar!(p, [string(method)], [1]; yaxis = nothing, 
+                color, xrotation = 35, label = ""
+            )
+        end
+        push!(ps, p)
+        push!(ps_bs, p)
+
         pname = string(Fd_ider, "_marginals")
         mysavefig(ps, pname)
 
-        method = ME_Z_EXPECTED_G_BOUNDED
+        method = ME_Z_EXPECTED_G_MOVING
         pname = string(Fd_ider, "_marginals_vs_beta")
         mysavefig(ps_bs, pname; method)
     end
@@ -524,7 +653,7 @@ let
 
         epps = Plots.Plot[]
         exps = Plots.Plot[]
-        for method in [ME_Z_FIXXED_G_BOUNDED, ME_Z_EXPECTED_G_BOUNDED, ME_Z_OPEN_G_OPEN]
+        for method in ALL_METHODS
             expp = plot(;title = string("Experimental"), marg_params...)
             epp = plot(;title = string(" MaxEnt: ", method), marg_params...)
             margin, m, M = -Inf, Inf, -Inf
@@ -565,7 +694,7 @@ let
         end
 
         extras = Plots.Plot[]
-        for k in [:xi, :D, Fd_ider] |> unique
+        for k in [:xi, :X, Fd_ider] |> unique
             p = plot(;title = "Experimental", size, 
                 xlabel = "rep", ylabel = string(k))
             xticks =  (EXPS, string.(EXPS))
@@ -575,8 +704,18 @@ let
             push!(extras, p)
         end
 
+        # legend
+        p = plot(;title = "Legend", size)
+        for (method, color) in method_colors
+            color = method_colors[method]
+            bar!(p, [string(method)], [1]; yaxis = nothing, 
+                color, xrotation = 35, label = ""
+            )
+        end
+        push!(extras, p)
+
         ps = Plots.Plot[exps; epps; extras]
-        layout = (3, 3)
+        layout = (3, 4)
         pname = string(Fd_ider, "_marginals_v2")
         mysavefig(ps, pname; layout)
 

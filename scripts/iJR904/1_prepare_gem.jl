@@ -1,21 +1,25 @@
 import DrWatson: quickactivate
 quickactivate(@__DIR__, "Chemostat_Folsom2014")
 
-import MAT
+@time begin
+    import MAT
 
-import SparseArrays
+    import SparseArrays
 
-import Chemostat_Folsom2014
-const ChF = Chemostat_Folsom2014
+    import Chemostat_Folsom2014
+    const ChF = Chemostat_Folsom2014
 
-const iJR = ChF.iJR904
-const Fd = ChF.FolsomData # experimental data
-const Bd = ChF.BegData    # cost data
+    const iJR = ChF.iJR904
+    const Fd = ChF.FolsomData # experimental data
+    const Bd = ChF.BegData    # cost data
 
-const Ch = ChF.Chemostat
-const ChU = Ch.Utils
-const ChSS = Ch.SteadyState
-const ChLP = Ch.LP
+    import Chemostat
+    const Ch = Chemostat
+    const ChU = Ch.Utils
+    const ChSS = Ch.SteadyState
+    const ChLP = Ch.LP
+
+end
 
 ## ------------------------------------------------------------------
 # LOAD RAW MODEL
@@ -169,6 +173,8 @@ ChF.test_fba(model, iJR.BIOMASS_IDER, iJR.COST_IDER)
 const BASE_MODELS = isfile(iJR.BASE_MODELS_FILE) ? 
     ChU.load_data(iJR.BASE_MODELS_FILE) : 
     Dict("base_model" => ChU.compressed_model(model))
+
+## -------------------------------------------------------------------
 let
     for (exp, D) in Fd.val(:D) |> enumerate
 
@@ -198,6 +204,8 @@ let
         );
         ChF.test_fba(exp, fva_model, iJR.BIOMASS_IDER, iJR.COST_IDER)
         
+        
+
         # storing
         DAT[exp] = ChU.compressed_model(fva_model)
 
@@ -207,3 +215,45 @@ let
         GC.gc()
     end
 end
+
+## -------------------------------------------------------------------
+# MAX MODEL
+let
+    # This model is bounded by the maximum rates found for EColi.
+    # Data From:
+    # Varma, (1993): 2465–73. https://doi.org/10.1128/AEM.59.8.2465-2473.1993.
+    # Extract max exchages from FIG 3 to form the maximum polytope
+
+    ChU.tagprintln_inmw("DOING MAX MODEL", 
+        "\n"
+    )
+
+    max_model = deepcopy(model)
+
+    # Biomass
+    # 2.2 1/ h
+    ChU.bounds!(max_model, iJR.BIOMASS_IDER, 0.0, 2.2)
+    
+    Fd_exch_map = iJR.load_Fd_exch_map() 
+    # 40 mmol / gDW h
+    ChU.bounds!(max_model, Fd_exch_map["GLC"], -40.0, 0.0)
+    # 45 mmol/ gDW
+    ChU.bounds!(max_model, Fd_exch_map["AC"], 0.0, 40.0)
+    # 55 mmol/ gDW h
+    ChU.bounds!(max_model, Fd_exch_map["FORM"], 0.0, 55.0)
+    # 20 mmol/ gDW h
+    ChU.bounds!(max_model, Fd_exch_map["O2"], -20.0, 0.0)
+    
+    # fva
+    max_model = ChLP.fva_preprocess(max_model, 
+        check_obj = iJR.BIOMASS_IDER,
+        verbose = true
+    );
+        
+    ChF.test_fba(max_model, iJR.BIOMASS_IDER, iJR.COST_IDER)
+
+    ## -------------------------------------------------------------------
+    # saving
+    BASE_MODELS["max_model"] = ChU.compressed_model(max_model)
+    ChU.save_data(iJR.BASE_MODELS_FILE, BASE_MODELS);
+end;
