@@ -66,7 +66,7 @@ const ME_Z_EXPECTED_G_MOVING    = :ME_Z_EXPECTED_G_MOVING     #
 const ME_Z_FIXXED_G_BOUNDED     = :ME_Z_FIXXED_G_BOUNDED      # Fix biom around observed
 
 ## -------------------------------------------------------------------
-function check_cache(datfile, method)
+function check_cache(datfile, exp, method)
     thid = threadid()
     if isfile(datfile)
         lock(WLOCK) do
@@ -104,6 +104,6 @@ include("2.0.1_ME_MAX_POL.jl")
 # # ME_Z_OPEN_G_OPEN
 # include("2.0.6_ME_Z_OPEN_G_OPEN.jl")
 
-# # ## ----------------------------------------------------------------------------
-# # save index
-# ChU.save_data(iJR.MAXENT_VARIANTS_INDEX_FILE, INDEX; verbose = true)
+# ## ----------------------------------------------------------------------------
+# save index
+ChU.save_data(iJR.MAXENT_VARIANTS_INDEX_FILE, INDEX; verbose = true)

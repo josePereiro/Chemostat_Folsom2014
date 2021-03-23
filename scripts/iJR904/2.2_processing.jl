@@ -46,12 +46,18 @@ INDEX = ChU.load_data(iJR.MAXENT_VARIANTS_INDEX_FILE; verbose = false);
 
 # -------------------------------------------------------------------
 const ME_Z_OPEN_G_OPEN        = :ME_Z_OPEN_G_OPEN
+const ME_MAX_POL              = :ME_MAX_POL  
 const ME_Z_EXPECTED_G_MOVING  = :ME_Z_EXPECTED_G_MOVING  
 const ME_Z_FIXXED_G_BOUNDED   = :ME_Z_FIXXED_G_BOUNDED
 const ME_Z_EXPECTED_G_BOUNDED = :ME_Z_EXPECTED_G_BOUNDED
 
-ALL_METHODS = [ME_Z_OPEN_G_OPEN, ME_Z_FIXXED_G_BOUNDED, 
-    ME_Z_EXPECTED_G_BOUNDED, ME_Z_EXPECTED_G_MOVING]
+ALL_METHODS = [
+    # ME_Z_OPEN_G_OPEN, 
+    ME_MAX_POL, 
+    # ME_Z_FIXXED_G_BOUNDED, 
+    # ME_Z_EXPECTED_G_BOUNDED, 
+    # ME_Z_EXPECTED_G_MOVING
+]
 
 # -------------------------------------------------------------------
 fileid = "2.1"
@@ -77,13 +83,14 @@ end
 
 method_colors = Dict(
     ME_Z_OPEN_G_OPEN => :red,
-    ME_Z_FIXXED_G_BOUNDED => :orange,
+    ME_MAX_POL => :orange,
+    ME_Z_FIXXED_G_BOUNDED => :green,
     ME_Z_EXPECTED_G_MOVING => :purple,
     ME_Z_EXPECTED_G_BOUNDED => :blue,
 )
 
-exch_met_map = iJR.load_exch_met_map()
-Fd_mets_map = iJR.load_mets_map()
+Fd_rxns_map = iJR.load_Fd_rxns_map()
+Fd_mets_map = iJR.load_Fd_mets_map()
 
 ## -------------------------------------------------------------------
 # Collect
@@ -91,19 +98,19 @@ DAT = ChU.DictTree()
 let 
     
     DATfile = joinpath(iJR.MODEL_PROCESSED_DATA_DIR, "2.1_DAT.jls")
-    # CACHE
-    if isfile(DATfile) 
-        global DAT = deserialize(DATfile) 
-        @info("DAT CACHE LOADED")
-        return
-    end
+    # # CACHE
+    # if isfile(DATfile) 
+    #     global DAT = deserialize(DATfile) 
+    #     @info("DAT CACHE LOADED")
+    #     return
+    # end
 
     objider = iJR.BIOMASS_IDER
     DAT[:FLX_IDERS] = FLX_IDERS
     DAT[:EXPS] = []
 
     # Find exps
-    for exp in 1:13
+    for exp in 1:4
         ok = false
         for method in ALL_METHODS
             ok = haskey(INDEX, method, :DFILE, exp) &&
@@ -149,7 +156,7 @@ let
         for Fd_met in FLX_IDERS
 
                 model_met = Fd_mets_map[Fd_met]
-                model_exch = exch_met_map[model_met]
+                model_exch = Fd_rxns_map[Fd_met]
                 model_exchi = ChU.rxnindex(model, model_exch)
 
                 proj = ChLP.projection2D(model, objider, model_exchi; l = 50)
@@ -249,7 +256,7 @@ end
 ## -------------------------------------------------------------------
 # MSE per beta
 let
-    method = ME_Z_EXPECTED_G_BOUNDED
+    method = ME_MAX_POL
 
     ps = Plots.Plot[]
     for exp in EXPS
@@ -275,7 +282,7 @@ let
             for ider in FLX_IDERS
 
                 model_met = Fd_mets_map[ider]
-                model_exch = exch_met_map[model_met]
+                model_exch = Fd_rxns_map[ider]
                 model_exchi = ChU.rxnindex(model, model_exch)
 
                 model_flx = ChU.av(model, epout, model_exchi)
@@ -288,13 +295,13 @@ let
             push!(MSEs, sum / N)
         end
 
-        scatter!(p, betas, MSEs; color = :black,
+        scatter!(p, first.(betas), MSEs; color = :black,
             label = "", m = 8, alpha = 0.8
         )
-        plot!(p, betas, MSEs; color = :black,
+        plot!(p, first.(betas), MSEs; color = :black,
             label = "", ls = :dash, alpha = 0.8
         )
-        vline!(p, [exp_beta]; color = :black, 
+        vline!(p, [first(exp_beta)]; color = :black, 
             label = "", ls = :dot, lw = 3, alpha = 0.9
         )
         push!(ps, p)
@@ -305,7 +312,7 @@ end
 ## -------------------------------------------------------------------
 # proj 2D
 let
-    method = ME_Z_EXPECTED_G_MOVING
+    method = ME_MAX_POL
     biom_ider = iJR.BIOMASS_IDER
 
     ps_pool = Dict()
@@ -318,7 +325,7 @@ let
         for Fd_ider in FLX_IDERS
 
             # 2D Projection
-            p = plot(;title = string("Folsom2014, exp: ", exp), 
+            p = plot(title = string("Folsom2014, exp: ", exp), 
                 xlabel = string(biom_ider), ylabel = string(Fd_ider),
                 legend = :left
             )
@@ -528,14 +535,13 @@ end
 let 
     objider = iJR.BIOMASS_IDER
     size = [300, 250]
-    Fd_mets_map = iJR.load_mets_map()
-    exch_met_map = iJR.load_exch_met_map()
+    method2 = ME_MAX_POL
 
     # Iders
     model_iders, Fd_iders = [objider], ["D"]
     for Fd_met in FLX_IDERS
         model_met = Fd_mets_map[Fd_met]
-        model_exch = exch_met_map[model_met]
+        model_exch = Fd_rxns_map[Fd_met]
         push!(model_iders, model_exch)
         push!(Fd_iders, string("u", Fd_met))
     end
@@ -570,7 +576,7 @@ let
                 M = maximum([M, ep_av, Fd_av])
                 margin = maximum([margin, 3 * ep_va])
 
-                if method == ME_Z_EXPECTED_G_MOVING
+                if method == method2
                     for (beta, epout) in sort(epouts; by = first)
                         ep_av = ChU.av(model, epout, model_ider)
                         ep_va = sqrt(ChU.va(model, epout, model_ider))
@@ -624,7 +630,7 @@ let
         pname = string(Fd_ider, "_marginals")
         mysavefig(ps, pname)
 
-        method = ME_Z_EXPECTED_G_MOVING
+        method = method2
         pname = string(Fd_ider, "_marginals_vs_beta")
         mysavefig(ps_bs, pname; method)
     end
@@ -643,7 +649,7 @@ let
     model_iders, Fd_iders = [objider], ["D"]
     for Fd_met in FLX_IDERS
         model_met = Fd_mets_map[Fd_met]
-        model_exch = exch_met_map[model_met]
+        model_exch = Fd_rxns_map[Fd_met]
         push!(model_iders, model_exch)
         push!(Fd_iders, string("u", Fd_met))
     end

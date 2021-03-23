@@ -21,8 +21,9 @@ function load_Fd_mets_map()
 end
 
 # EX_glc_LPAREN_e_RPAREN_
-function load_Fd_exch_map()
+function load_Fd_rxns_map()
     Fd_exch_map = Dict()
+    Fd_exch_map["D"] = "BiomassEcoli"
     Fd_exch_map["GLC"] = "EX_glc_LPAREN_e_RPAREN_"
     Fd_exch_map["AC"] = "EX_ac_LPAREN_e_RPAREN_"
     Fd_exch_map["LAC"] = "EX_lac_D_LPAREN_e_RPAREN_"

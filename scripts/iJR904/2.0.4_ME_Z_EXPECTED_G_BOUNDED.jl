@@ -11,7 +11,7 @@ let
         ## -------------------------------------------------------------------
         # handle cache
         datfile = dat_file(string(DAT_FILE_PREFFIX, method); exp)
-        check_cache(datfile, method) || continue
+        check_cache(datfile, exp, method) || continue
 
         # prepare model
         model = load_model(exp)

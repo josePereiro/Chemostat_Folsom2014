@@ -16,11 +16,11 @@ let
     @threads for _ in 1:nthreads()
         thid = threadid()
         for (exp, cGLC) in Ch
-            
+
             ## -------------------------------------------------------------------
             # handle cache
             datfile = dat_file(DAT_FILE_PREFFIX; method, exp)
-            check_cache(datfile, method) && continue
+            check_cache(datfile, exp, method) && continue
 
             ## -------------------------------------------------------------------
             # SetUp
@@ -59,11 +59,12 @@ let
             smooth = 0.1
 
             # This will be reduced every times damping is detected
+            damp_factor = 0.5
             biom_gddamp = 1.0
             vg_gddamp = 1.0
 
             beta_step_len0 = 3
-            beta_step_scalef = 1.1
+            beta_step_scalef = 1.0
 
             UJL.record!(mon) do dat
                 tdat = get!(dat, exp, Dict())
@@ -80,7 +81,7 @@ let
                     abs(biom_avPME - exp_growth)/abs(exp_growth) <= roundth
                 isbeta_stationary = UJL.is_stationary(biom_betas, stth, stw) && 
                     UJL.is_stationary(vg_betas, stth, stw)
-                roundconv = rounditer > 10 && (hasvalid_epout_moments || isbeta_stationary)
+                return hasvalid_epout_moments || isbeta_stationary
             end
 
             while true
@@ -89,7 +90,7 @@ let
                 let
                     target = exp_growth
                     x0 = biom_beta
-                    maxΔx = max(abs(biom_beta) * 0.05, 1e3)
+                    maxΔx = max(abs(biom_beta) * 0.05, 5e3)
                     minΔx = maxΔx * 0.01
                     x1 = x0 + maxΔx * 0.01
                     senses = [] # To detect damping
@@ -135,6 +136,7 @@ let
                                 (biom_avPME_vgb0, biom_avPME, exp_growth), biom_diff, 
                                 (vg_avPME_vgb0, vg_avPME, cgD_X), vg_diff, 
                                 (biom_beta, vg_beta), 
+                                biom_gddamp,
                                 thid
                             ); println()
                             last_uptime = time()
@@ -157,14 +159,14 @@ let
                     function z_break_cond(gdmodel)
                         roundconv = check_roundconv()
                         zconv = abs(biom_avPME - exp_growth)/abs(exp_growth) <= gdth
-                        roundconv || zconv
+                        (rounditer > 10 && roundconv) || zconv
                     end
 
                     ## -------------------------------------------------------------------
                     gdmodel = UJL.grad_desc(z_fun; 
                         x0, x1, gdth, minΔx, maxΔx, smooth,
                         target, maxiter = gdmaxiter, 
-                        damp = biom_gddamp,
+                        damp_factor, damp = biom_gddamp,
                         break_cond = z_break_cond,
                         verbose = false
                     )
@@ -247,6 +249,7 @@ let
                                     (biom_avPME_vgb0, biom_avPME, exp_growth), biom_diff, 
                                     (vg_avPME_vgb0, vg_avPME, cgD_X), vg_diff, 
                                     (biom_beta, vg_beta), 
+                                    vg_gddamp,
                                     thid
                                 ); println()
                                 last_uptime = time()
@@ -269,14 +272,14 @@ let
                         function vg_break_cond(epmodel)
                             vgconv = abs(vg_avPME) <= abs(cgD_X)
                             roundconv = check_roundconv()
-                            roundconv || vgconv
+                            (rounditer > 10 && roundconv) || vgconv
                         end
 
                         ## -------------------------------------------------------------------
                         gdmodel = UJL.grad_desc(vg_fun; 
                             x0, x1, gdth, minΔx, maxΔx,
                             break_cond = vg_break_cond,
-                            damp = vg_gddamp,
+                            damp_factor, damp = vg_gddamp,
                             target, maxiter = gdmaxiter, 
                             verbose = false
                         )
@@ -337,7 +340,7 @@ let
                 roundconv && break
                 rounditer += 1
                 rounditer > maxrounds && break
-            end
+            end # round while
 
             ## -------------------------------------------------------------------
             lock(WLOCK) do
@@ -363,7 +366,6 @@ let
             end
 
         end # for exp, cGLC
-        exit() # Test
     end # for thid
     UJL.reset!(mon)
 

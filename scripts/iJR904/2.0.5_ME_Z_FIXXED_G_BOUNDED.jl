@@ -9,15 +9,7 @@ let
 
         # handle cache
         datfile = dat_file(DAT_FILE_PREFFIX; exp, method)
-        if isfile(datfile)
-            lock(WLOCK) do
-                INDEX[method, :DFILE, exp] = datfile
-                @info("Cached loaded (skipping)",
-                    exp, D, datfile, threadid()
-                ); println()
-            end
-            continue
-        end
+        check_cache(datfile, exp, method) || continue
 
         # setup
         model = load_model(exp)
