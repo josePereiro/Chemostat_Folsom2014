@@ -129,7 +129,7 @@ version = "0.9.29"
 
 [[Chemostat]]
 deps = ["Clp", "Dates", "Distributed", "Distributions", "ExtractMacro", "GLPK", "JuMP", "LinearAlgebra", "MAT", "MathProgBase", "Printf", "ProgressMeter", "Random", "Serialization", "SparseArrays", "SpecialFunctions", "StatsBase", "UtilsJL"]
-git-tree-sha1 = "bbe3ff43719d09a8478bd88a14935947a5e7df94"
+path = "/Users/Pereiro/.julia/dev/Chemostat"
 uuid = "c5987326-81b3-11ea-28dd-b531745de20f"
 version = "0.10.1"
 
@@ -1017,10 +1017,10 @@ uuid = "79098fc4-a85e-5d69-aa6a-4863f24498fa"
 version = "0.6.1"
 
 [[Rmath_jll]]
-deps = ["Libdl", "Pkg"]
-git-tree-sha1 = "d76185aa1f421306dec73c057aa384bad74188f0"
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "1b7bf41258f6c5c9c31df8c1ba34c1fc88674957"
 uuid = "f50d1b31-88e8-58de-be2c-1cc44531875f"
-version = "0.2.2+1"
+version = "0.2.2+2"
 
 [[Rotations]]
 deps = ["LinearAlgebra", "StaticArrays", "Statistics"]
@@ -1171,10 +1171,10 @@ version = "1.0.2"
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[UtilsJL]]
-deps = ["BSON", "Colors", "Dates", "Distributed", "DrWatson", "FileIO", "FixedPointNumbers", "Images", "Logging", "PkgTemplates", "Plots", "Printf", "ProgressMeter", "Serialization", "SparseArrays"]
-git-tree-sha1 = "fc760483bdec382d2281b94f5afa2cef41c9ed39"
+deps = ["BSON", "Colors", "Dates", "Distributed", "DrWatson", "FileIO", "FixedPointNumbers", "Images", "Logging", "PkgTemplates", "Plots", "Printf", "ProgressMeter", "Serialization", "SparseArrays", "Statistics"]
+path = "/Users/Pereiro/.julia/dev/UtilsJL"
 uuid = "1d417f3e-fd42-11ea-18da-dda57c9b97b2"
-version = "0.5.4"
+version = "0.6.0"
 
 [[Wayland_jll]]
 deps = ["Artifacts", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg", "XML2_jll"]

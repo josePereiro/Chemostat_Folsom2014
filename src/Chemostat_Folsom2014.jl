@@ -11,6 +11,7 @@ module Chemostat_Folsom2014
     include("Utils/Utils.jl")
     include("FolsomData/FolsomData.jl")
     include("BegData/BegData.jl")
+    include("EColiCore/EColiCore.jl")
     include("iJR904/iJR904.jl")
 
     function __init__()
