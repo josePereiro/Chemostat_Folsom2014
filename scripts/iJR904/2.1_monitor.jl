@@ -21,17 +21,27 @@ end
 fileid = "2.0"
 mysavefig(p, pname; params...) = 
     UJL.mysavefig(p, string(fileid, "_", pname), iJR.MODEL_FIGURES_DIR; params...)
+
 ## ----------------------------------------------------------------------------
 let
     mon = UJL.OnDiskMonitor(iJR.MODEL_CACHE_DIR, "monitor.jld2")
-    UJL.sync_from_disk!(mon)
-    UJL.get_cache(mon)
-    UJL.watch(mon) do ddat
 
+    UJL.watch(mon; wt = 15.0) do ddat
+
+        isempty(ddat) && return
+        
         # vg_beta, biom_beta, 
         # biom_avPME, vg_avPME
+        live_proves = Dict()
         for (exp, tdat) in ddat
             method = get(tdat, :method, "")
+            
+            # Check activity
+            old_lprove = get!(live_proves, exp, -1.0)
+            new_lprove = get(tdat, :live_prove, -1.0)
+            old_lprove == new_lprove && continue
+            live_proves[:exp] = new_lprove
+
             for datk in [:round, :gd]
                 kdat = get!(tdat, datk, Dict())
                 ps = Plots.Plot[]

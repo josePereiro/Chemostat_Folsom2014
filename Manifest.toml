@@ -129,9 +129,9 @@ version = "0.9.29"
 
 [[Chemostat]]
 deps = ["Clp", "Dates", "Distributed", "Distributions", "ExtractMacro", "GLPK", "JuMP", "LinearAlgebra", "MAT", "MathProgBase", "Printf", "ProgressMeter", "Random", "Serialization", "SparseArrays", "SpecialFunctions", "StatsBase", "UtilsJL"]
-path = "/Users/Pereiro/.julia/dev/Chemostat"
+git-tree-sha1 = "dc1032e735af9b226bf46cedfe8e627864ae7e6f"
 uuid = "c5987326-81b3-11ea-28dd-b531745de20f"
-version = "0.10.1"
+version = "0.10.2"
 
 [[ChemostatPlots]]
 deps = ["Chemostat", "Distributions", "LinearAlgebra", "Plots"]
@@ -960,9 +960,9 @@ version = "1.5.0"
 
 [[Qt_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "OpenSSL_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libxcb_jll", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_keysyms_jll", "Xorg_xcb_util_renderutil_jll", "Xorg_xcb_util_wm_jll", "Zlib_jll", "xkbcommon_jll"]
-git-tree-sha1 = "7760cfea90bec61814e31dfb204fa4b81bba7b57"
+git-tree-sha1 = "32d763e4624ff5df9ad399aa29feeda5a5f5c43f"
 uuid = "ede63266-ebff-546c-83e0-1c6fb6d0efc8"
-version = "5.15.2+1"
+version = "5.15.2+3"
 
 [[QuadGK]]
 deps = ["DataStructures", "LinearAlgebra"]
@@ -1172,9 +1172,9 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[UtilsJL]]
 deps = ["BSON", "Colors", "Dates", "Distributed", "DrWatson", "FileIO", "FixedPointNumbers", "Images", "Logging", "PkgTemplates", "Plots", "Printf", "ProgressMeter", "Serialization", "SparseArrays", "Statistics"]
-path = "/Users/Pereiro/.julia/dev/UtilsJL"
+git-tree-sha1 = "909bc1e105d3cc6b2f37bba20728321926bbe4bd"
 uuid = "1d417f3e-fd42-11ea-18da-dda57c9b97b2"
-version = "0.6.0"
+version = "0.7.1"
 
 [[Wayland_jll]]
 deps = ["Artifacts", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg", "XML2_jll"]

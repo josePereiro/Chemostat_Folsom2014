@@ -19,6 +19,7 @@ UtilsJL = "1d417f3e-fd42-11ea-18da-dda57c9b97b2"
 
 [compat]
 Chemostat = "0.10"
+UtilsJL = "0.7"
 julia = "1.5"
 
 [extras]

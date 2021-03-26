@@ -67,18 +67,18 @@ foreach(exchs) do idx
 end
 
 ## -------------------------------------------------------------------
-# EXCHANGE METABOLITE MAP
-exch_met_map = Dict()
-for rxni in exchs
-    rxn = model.rxns[rxni]
-    metis = ChU.rxn_mets(model, rxni)
-    mets = model.mets[metis]
-    length(mets) != 1 && continue 
-    met = mets |> first
-    exch_met_map[rxn] = met
-    exch_met_map[met] = rxn
-end
-ChU.save_data(iJR.EXCH_MET_MAP_FILE, exch_met_map)
+# # EXCHANGE METABOLITE MAP
+# exch_met_map = Dict()
+# for rxni in exchs
+#     rxn = model.rxns[rxni]
+#     metis = ChU.rxn_mets(model, rxni)
+#     mets = model.mets[metis]
+#     length(mets) != 1 && continue 
+#     met = mets |> first
+#     exch_met_map[rxn] = met
+#     exch_met_map[met] = rxn
+# end
+# ChU.save_data(iJR.EXCH_MET_MAP_FILE, exch_met_map)
 
 ## -------------------------------------------------------------------
 # ENZYMATIC COST INFO
@@ -234,15 +234,15 @@ let
     # 2.2 1/ h
     ChU.bounds!(max_model, iJR.BIOMASS_IDER, 0.0, 2.2)
     
-    Fd_exch_map = iJR.load_Fd_exch_map() 
+    Fd_rxns_map = iJR.load_Fd_rxns_map() 
     # 40 mmol / gDW h
-    ChU.bounds!(max_model, Fd_exch_map["GLC"], -40.0, 0.0)
+    ChU.bounds!(max_model, Fd_rxns_map["GLC"], -40.0, 0.0)
     # 45 mmol/ gDW
-    ChU.bounds!(max_model, Fd_exch_map["AC"], 0.0, 40.0)
+    ChU.bounds!(max_model, Fd_rxns_map["AC"], 0.0, 40.0)
     # 55 mmol/ gDW h
-    ChU.bounds!(max_model, Fd_exch_map["FORM"], 0.0, 55.0)
+    ChU.bounds!(max_model, Fd_rxns_map["FORM"], 0.0, 55.0)
     # 20 mmol/ gDW h
-    ChU.bounds!(max_model, Fd_exch_map["O2"], -20.0, 0.0)
+    ChU.bounds!(max_model, Fd_rxns_map["O2"], -20.0, 0.0)
     
     # fva
     max_model = ChLP.fva_preprocess(max_model, 
@@ -251,13 +251,14 @@ let
     );
 
     ## -------------------------------------------------------------------
+    test_model = deepcopy(max_model)
     for exp in 1:4
         D = Fd.val(:D, exp)
         cgD_X = Fd.cval(:GLC, exp) * Fd.val(:D, exp) / Fd.val(:X, exp)
-        ChU.lb!(max_model, iJR.GLC_EX_IDER, -cgD_X)
-        fbaout = ChLP.fba(max_model, iJR.BIOMASS_IDER, iJR.COST_IDER)
-        biom = ChU.av(max_model, fbaout, iJR.BIOMASS_IDER)
-        cost = ChU.av(max_model, fbaout, iJR.COST_IDER)
+        ChU.lb!(test_model, iJR.GLC_EX_IDER, -cgD_X)
+        fbaout = ChLP.fba(test_model, iJR.BIOMASS_IDER, iJR.COST_IDER)
+        biom = ChU.av(test_model, fbaout, iJR.BIOMASS_IDER)
+        cost = ChU.av(test_model, fbaout, iJR.COST_IDER)
         @info("Test", exp, cgD_X, D, biom, cost); println()
     end
 
