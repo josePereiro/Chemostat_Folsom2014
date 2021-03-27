@@ -172,49 +172,46 @@ ChF.test_fba(model, iJR.BIOMASS_IDER, iJR.COST_IDER)
 # FVA PREPROCESSING
 const BASE_MODELS = isfile(iJR.BASE_MODELS_FILE) ? 
     ChU.load_data(iJR.BASE_MODELS_FILE) : 
-    Dict("base_model" => ChU.compressed_model(model))
+    Dict{Any, Any}("base_model" => ChU.compressed_model(model))
 
 ## -------------------------------------------------------------------
-# let
-#     for (exp, D) in Fd.val(:D) |> enumerate
+let
+    for (exp, D) in Fd.val(:D) |> enumerate
 
-#         DAT = get!(BASE_MODELS, "fva_models", Dict())
-#         ChU.tagprintln_inmw("DOING FVA", 
-#             "\nexp:             ", exp,
-#             "\nD:               ", D,
-#             "\ncProgress:       ", length(DAT),
-#             "\n"
-#         )
-#         haskey(DAT, exp) && continue # cached
+        DAT = get!(BASE_MODELS, "fva_models", Dict())
+        ChU.tagprintln_inmw("DOING FVA", 
+            "\nexp:             ", exp,
+            "\nD:               ", D,
+            "\ncProgress:       ", length(DAT),
+            "\n"
+        )
+        haskey(DAT, exp) && continue # cached
 
-#         ## -------------------------------------------------------------------
-#         # prepare model
-#         model0 = deepcopy(model)
-#         M, N = size(model0)
-#         exp_xi = Fd.val(:xi, exp)
-#         intake_info = iJR.intake_info(exp)
-#         ChSS.apply_bound!(model0, exp_xi, intake_info; 
-#             emptyfirst = true)
+        ## -------------------------------------------------------------------
+        # prepare model
+        model0 = deepcopy(model)
+        M, N = size(model0)
+        exp_xi = Fd.val(:xi, exp)
+        intake_info = iJR.intake_info(exp)
+        ChSS.apply_bound!(model0, exp_xi, intake_info; 
+            emptyfirst = true)
 
-#         ChF.test_fba(exp, model0, iJR.BIOMASS_IDER, iJR.COST_IDER)
-#         fva_model = ChLP.fva_preprocess(model0, 
-#             # eps = 1-9, # This avoid blocking totally any reaction
-#             check_obj = iJR.BIOMASS_IDER,
-#             verbose = true
-#         );
-#         ChF.test_fba(exp, fva_model, iJR.BIOMASS_IDER, iJR.COST_IDER)
-        
-        
+        ChF.test_fba(exp, model0, iJR.BIOMASS_IDER, iJR.COST_IDER)
+        fva_model = ChLP.fva_preprocess(model0, 
+            check_obj = iJR.BIOMASS_IDER,
+            verbose = true
+        );
+        ChF.test_fba(exp, fva_model, iJR.BIOMASS_IDER, iJR.COST_IDER)
 
-#         # storing
-#         DAT[exp] = ChU.compressed_model(fva_model)
+        # storing
+        DAT[exp] = ChU.compressed_model(fva_model)
 
-#         ## -------------------------------------------------------------------
-#         # caching
-#         ChU.save_data(iJR.BASE_MODELS_FILE, BASE_MODELS);
-#         GC.gc()
-#     end
-# end
+        ## -------------------------------------------------------------------
+        # caching
+        ChU.save_data(iJR.BASE_MODELS_FILE, BASE_MODELS);
+        GC.gc()
+    end
+end
 
 ## -------------------------------------------------------------------
 # MAX MODEL
@@ -224,9 +221,7 @@ let
     # Varma, (1993): 2465–73. https://doi.org/10.1128/AEM.59.8.2465-2473.1993.
     # Extract max exchages from FIG 3 to form the maximum polytope
 
-    ChU.tagprintln_inmw("DOING MAX MODEL", 
-        "\n"
-    )
+    ChU.tagprintln_inmw("DOING MAX MODEL", "\n")
 
     max_model = deepcopy(model)
     

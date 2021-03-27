@@ -25,14 +25,12 @@ mysavefig(p, pname; params...) =
 ## ----------------------------------------------------------------------------
 let
     mon = UJL.OnDiskMonitor(iJR.MODEL_CACHE_DIR, "monitor.jld2")
+    live_proves = Dict()
 
     UJL.watch(mon; wt = 15.0) do ddat
 
         isempty(ddat) && return
         
-        # vg_beta, biom_beta, 
-        # biom_avPME, vg_avPME
-        live_proves = Dict()
         for (exp, tdat) in ddat
             method = get(tdat, :method, "")
             

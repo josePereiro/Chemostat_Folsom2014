@@ -20,13 +20,7 @@ quickactivate(@__DIR__, "Chemostat_Folsom2014")
     import Chemostat.LP.MathProgBase
     const Ch = Chemostat
     const ChU = Ch.Utils
-    const ChSS = Ch.SteadyState
-    const ChLP = Ch.LP
-    const ChEP = Ch.MaxEntEP
-    const ChSU = Ch.SimulationUtils
 
-    import JuMP, GLPK
-    import JuMP.MathOptInterface
     using Serialization
     import UtilsJL
     const UJL = UtilsJL
@@ -39,9 +33,11 @@ end
 
 ## -----------------------------------------------------------------------------------------------
 LPDAT = ChU.load_data(iJR.LP_DAT_FILE)
-const FBA_BOUNDED = :FBA_BOUNDED
-const FBA_OPEN = :FBA_OPEN
-const YIELD = :YIELD
+
+const FBA_Z_FIX_MIN_COST = :FBA_Z_FIX_MIN_COST
+const FBA_MAX_BIOM_MIN_COST = :FBA_MAX_BIOM_MIN_COST
+const FBA_Z_FIX_MIN_VG_COST = :FBA_Z_FIX_MIN_VG_COST
+const FBA_Z_VG_FIX_MIN_COST = :FBA_Z_VG_FIX_MIN_COST
 
 ## -----------------------------------------------------------------------------------------------
 fileid = "3.1"
@@ -66,72 +62,21 @@ ider_colors = let
 end
 
 method_colors = Dict(
-    FBA_OPEN => :red,
-    FBA_BOUNDED => :orange,
-    YIELD => :blue,
+    FBA_Z_FIX_MIN_COST => :red,
+    FBA_MAX_BIOM_MIN_COST => :orange,
+    FBA_Z_FIX_MIN_VG_COST => :blue,
+    FBA_Z_VG_FIX_MIN_COST => :purple,
 )
 
-## -----------------------------------------------------------------------------------------------
-# yield correlation
-let
-    p = plot(;title = "Yield correlation", xlabel = "exp", ylabel = "model")
-    m, M = Inf, -Inf
-    for exp in EXPS
-        try
-            model = LPDAT[YIELD, :model, exp]
-            yout = LPDAT[YIELD, :yout, exp]
-            model_yield = LPDAT[YIELD, :yield, exp]
-            
-            objidx = ChU.rxnindex(model, iJR.BIOMASS_IDER)
-            exp_growth = Fd.val("D", exp)
-            model_growth = ChU.av(model, yout, objidx)
+ALL_METHODS = [
+    FBA_Z_FIX_MIN_COST,
+    FBA_MAX_BIOM_MIN_COST, 
+    FBA_Z_FIX_MIN_VG_COST,
+    FBA_Z_VG_FIX_MIN_COST
+]
 
-            diff = abs(model_growth - exp_growth)/exp_growth
-            diff > 0.05 && continue # unfeasible
-
-            exp_yield = abs(Fd.val("D", exp) / Fd.uval("GLC", exp))
-            scatter!(p, [exp_yield], [model_yield]; ms = 8,
-                    color = :blue, alpha = 0.6, label = ""
-            )
-            m = minimum([m, exp_yield, model_yield])
-            M = maximum([M, exp_yield, model_yield])
-        catch err; @warn("Fail", err) end
-    end
-    plot!(p, [m,M], [m,M]; ls = :dash, color = :black, label = "")
-    pname = "yield_corr"
-    mysavefig(p, pname)
-end
-
-## -----------------------------------------------------------------------------------------------
-# yield vs stuff
-let
-    ps = Plots.Plot[]
-    for id in [:D, :cGLC, :xi, :uGLC]
-        p = plot(;title = "yield vs $(id)", xlabel = "exp $id", ylabel = "yield")
-        for exp in EXPS
-            try
-                model = LPDAT[YIELD, :model, exp]
-                yout = LPDAT[YIELD, :yout, exp]
-                model_yield = LPDAT[YIELD, :yield, exp]
-                # status, yflxs, model_yield, d, model = DAT[D]
-                exglc_idx = ChU.rxnindex(model, "EX_glc_LPAREN_e_RPAREN__REV")
-                biomass_idx = ChU.rxnindex(model, iJR.BIOMASS_IDER)
-                
-                Fd_val = Fd.val(id, exp)
-                exp_yield = abs(Fd.val("D", exp) / Fd.uval("GLC", exp))
-                scatter!(p, [Fd_val], [model_yield]; ms = 8,
-                        color = :blue, alpha = 0.6, label = ""
-                )
-                scatter!(p, [Fd_val], [exp_yield]; ms = 8,
-                        color = :red, alpha = 0.6, label = ""
-                )
-            catch err; @warn("Fail", err) end
-        end
-        push!(ps, p)
-    end
-    pname = "yield_vs_stuff"
-    mysavefig(ps, pname)
-end
+Fd_mets_map = iJR.load_Fd_mets_map()
+Fd_rxns_map = iJR.load_Fd_rxns_map()
 
 ## -----------------------------------------------------------------------------------------------
 # correlations
@@ -140,79 +85,40 @@ DAT[:FLX_IDERS] = FLX_IDERS
 DAT[:EXPS] = EXPS
 
 ## -----------------------------------------------------------------------------------------------
-FLX_IDERS_MAP = Dict(
-    "GLC" => "EX_glc_LPAREN_e_RPAREN__REV",
-    "AC" => "EX_ac_LPAREN_e_RPAREN_",
-    "LAC" => "EX_lac_D_LPAREN_e_RPAREN_",
-    "PYR" => "EX_pyr_LPAREN_e_RPAREN_",
-    "SUCC" => "EX_succ_LPAREN_e_RPAREN_",
-    "FORM" => "EX_for_LPAREN_e_RPAREN_",
-    "O2" => "EX_o2_LPAREN_e_RPAREN__REV",
-    "CO2" => "EX_co2_LPAREN_e_RPAREN_"
-)
-    
-## -----------------------------------------------------------------------------------------------
-# flx correlations
+# Flx correlations
 let
-    yield_p = plot(title = "yield tot corrs"; xlabel = "exp flx", ylabel = "model flx")
-    open_fba_p = plot(title = "open fba tot corrs"; xlabel = "exp flx", ylabel = "model flx")
-    bounded_fba_p = plot(title = "bounded fba tot corrs"; xlabel = "exp flx", ylabel = "model flx")
-    margin, m, M = -Inf, Inf, -Inf
-    for (Fd_ider, model_ider) in FLX_IDERS_MAP
-        for exp in EXPS
-
+    ps = Plots.Plot[]
+    for method in ALL_METHODS
+        p = plot(;title = string(method), xlabel = "exp flx", ylabel = "model flx")
+        for Fd_ider in FLX_IDERS
+            model_ider = Fd_rxns_map[Fd_ider]
+            for exp in EXPS
                 color = ider_colors[Fd_ider]
-                Fd_flx = abs(Fd.uval(Fd_ider, exp)) 
-                Fd_err = abs(Fd.uerr(Fd_ider, exp)) 
+                # every body is possitive here
+                Fd_flx = abs(Fd.uval(Fd_ider, exp))
+
+                model = LPDAT[method, :model, exp]
+                fbaout = LPDAT[method, :fbaout, exp]
                 
-                # yield
-                model = LPDAT[YIELD, :model, exp]
-                yout = LPDAT[YIELD, :yout, exp]
+                fba_flx = abs(ChU.av(model, fbaout, model_ider))
+                DAT[method, :Fd, :flx, Fd_ider, exp] = Fd_flx
+                DAT[method, :lp, :flx, Fd_ider, exp] = fba_flx
 
-                ymax_flx = ChU.av(model, yout, model_ider)
-                diffsign = sign(Fd_flx) * sign(ymax_flx)
-                diffsign = ifelse.(diffsign .== 0, 1.0, diffsign)
-                Fd_vals = abs(Fd_flx) * diffsign
-                ep_vals = abs(ymax_flx) * diffsign
-
-                DAT[YIELD, :Fd, :flx, Fd_ider, exp] = Fd_flx
-                DAT[YIELD, :lp, :flx, Fd_ider, exp] = ymax_flx
-
-                scatter!(yield_p, [Fd_flx], [ymax_flx]; ms = 8,
-                    xerr = [Fd_err],
-                    color, alpha = 0.6, label = ""
+                scatter!(p, [Fd_flx], [fba_flx]; 
+                    ms = 8, color, label = ""
                 )
-
-                # bounded fba
-                for (fba_type, p) in [(FBA_BOUNDED, bounded_fba_p) , 
-                                    (FBA_OPEN, open_fba_p)]
-
-                    model = LPDAT[fba_type, :model, exp]
-                    fbaout = LPDAT[fba_type, :fbaout, exp]
-                    
-                    fba_flx = ChU.av(model, fbaout, model_ider)
-                    DAT[fba_type, :Fd, :flx, Fd_ider, exp] = Fd_flx
-                    DAT[fba_type, :lp, :flx, Fd_ider, exp] = fba_flx
-                    scatter!(p, [Fd_flx], [fba_flx]; ms = 8,
-                        xerr = [Fd_err],
-                        color, alpha = 0.6, label = ""
-                    )
-                    m = minimum([m, Fd_flx, ymax_flx, fba_flx])
-                    M = maximum([M, Fd_flx, ymax_flx, fba_flx])
-                end
-
+            end
         end
-    end
-    margin = abs(M - m) * 0.1
-    ps = [yield_p, bounded_fba_p, open_fba_p]
-    for p in ps
-        plot!(p, [m - margin, M + margin], [m - margin, M + margin]; 
-            ls = :dash, color = :black, label = "")
+        xs = DAT[method, [:Fd, :lp], :flx, FLX_IDERS, EXPS] |> sort
+        plot!(p, xs, xs; label = "", ls = :dash, 
+            alpha = 0.9, color = :black, lw = 3
+        )
+        push!(ps, p)
     end
     
     pname = "flx_tot_corr"
-    layout = (1, 3)
-    mysavefig(ps, pname; layout)
+    mysavefig(ps, pname)
+
 end
 
 ## -------------------------------------------------------------------
@@ -221,22 +127,6 @@ let
     CORR_DAT = isfile(iJR.CORR_DAT_FILE) ? ChU.load_data(iJR.CORR_DAT_FILE) : Dict()
     CORR_DAT[:LP] = DAT
     ChU.save_data(iJR.CORR_DAT_FILE, CORR_DAT)
-end
-
-## -------------------------------------------------------------------
-# join flx correlations
-let
-    figdir = iJR.MODEL_FIGURES_DIR
-    for (lp_p, ep_p, join_name) in [
-        ("3.1_flx_tot_corr.png", "2.1_flx_tot_corr.png", "flx_join_corr.png")
-    ] 
-        lp_img = FileIO.load(joinpath(figdir, lp_p))
-        ep_img = FileIO.load(joinpath(figdir, ep_p))
-        join_p = UJL.make_grid([lp_img, ep_img])
-        fname = joinpath(figdir, join_name)
-        FileIO.save(fname, join_p)
-        @info "Plotting" fname
-    end
 end
 
 ## -------------------------------------------------------------------
