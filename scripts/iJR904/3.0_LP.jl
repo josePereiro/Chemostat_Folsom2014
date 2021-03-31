@@ -22,7 +22,6 @@ quickactivate(@__DIR__, "Chemostat_Folsom2014")
     const ChU = Ch.Utils
     const ChLP = Ch.LP
 
-    import JuMP, GLPK
     using Serialization
     import UtilsJL
     const UJL = UtilsJL
@@ -36,7 +35,7 @@ const FBA_Z_VG_FIX_MIN_COST = :FBA_Z_VG_FIX_MIN_COST
 const EXPS = 1:4
 
 ## -----------------------------------------------------------------------------------------------
-function base_model(exp)
+function load_model(exp)
     BASE_MODELS = ChU.load_data(iJR.BASE_MODELS_FILE; verbose = false);
     model = BASE_MODELS["fva_models"][exp] |> ChU.uncompressed_model
 end
@@ -61,7 +60,7 @@ let
 
         # FBA_MAX_BIOM_MIN_COST
         let
-            model = base_model(exp)
+            model = load_model(exp)
             fbaout = ChLP.fba(model, objider, costider)
             
             LPDAT[FBA_MAX_BIOM_MIN_COST, :model, exp] = model
@@ -70,7 +69,7 @@ let
 
         # FBA_Z_FIX_MIN_COST
         let
-            model = base_model(exp)
+            model = load_model(exp)
             exp_growth = Fd.val("D", exp)
             ChU.bounds!(model, objider, exp_growth, exp_growth)
             fbaout = ChLP.fba(model, objider, costider)
@@ -81,7 +80,7 @@ let
 
         # FBA_Z_FIX_MIN_VG_COST
         let
-            model = base_model(exp)
+            model = load_model(exp)
             exp_growth = Fd.val("D", exp)
             ChU.bounds!(model, objider, exp_growth, exp_growth)
             fbaout1 = ChLP.fba(model, exglcider; sense = max_sense)
@@ -95,7 +94,7 @@ let
 
         # FBA_Z_VG_FIX_MIN_COST
         let
-            model = base_model(exp)
+            model = load_model(exp)
             exp_growth = Fd.val("D", exp)
             ChU.bounds!(model, objider, exp_growth, exp_growth)
             exp_exglc = Fd.uval("GLC", exp)

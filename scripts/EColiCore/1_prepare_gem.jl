@@ -103,7 +103,7 @@ ChU.save_data(ECC.EXCH_MET_MAP_FILE, exch_met_map)
 
 ## -------------------------------------------------------------------
 MODEL_DAT = Dict()
-MODEL_DAT[:base_model] = deepcopy(model) |> ChU.compressed_model;
+MODEL_DAT[:load_model] = deepcopy(model) |> ChU.compressed_model;
 
 ## -------------------------------------------------------------------
 # FVA PREPROCESSING

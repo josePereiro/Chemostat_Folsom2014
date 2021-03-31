@@ -186,11 +186,12 @@ const msd_mets = ["GLC", "PYR", "SUCC", "LAC", "FORM", "AC"]
 _get_val(id, dk) = BUNDLE[string(id)][dk]
 _get_val(id, dk, exp::Int) = BUNDLE[string(id)][dk][exp]
 function _get_val(id, dk, D::Float64)
-    exp = findfirst(BUNDLE["D"] .== D)
+    exp = findfirst(BUNDLE["D"][dk] .== D)
+    isnothing(exp) && error("No experiment with D = $D")
     _get_val(id, dk, exp)
 end
 _get_val(id, dk, ref, dflt) =
-    try; _get_val(id, dk, ref); catch err; (@warn(err); dflt) end
+    try; _get_val(id, dk, ref); catch err; dflt end
 
 for fun in [:val, :err]
     dk = string(fun)
@@ -208,3 +209,5 @@ end
 name(id) = BUNDLE[string(id)]["name"]
 unit(id) = BUNDLE[string(id)]["unit"]
 
+ciD_X(id) = [cval(id, exp, 0.0) * val(:D, exp) / val(:X, exp) for exp in EXPS]
+ciD_X(id, exp) = cval(id, exp, 0.0) * val(:D, exp) / val(:X, exp)

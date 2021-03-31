@@ -35,7 +35,7 @@ end
 ## ----------------------------------------------------------------------------
 # Biomass medium sensibility
 let
-    model = BASE_MODELS["base_model"]
+    model = BASE_MODELS["load_model"]
     obj_ider = iJR.BIOMASS_IDER
     xi = Fd.val("xi") |> minimum
     intake_info = iJR.load_base_intake_info()

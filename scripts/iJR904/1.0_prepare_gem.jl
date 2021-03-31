@@ -172,7 +172,7 @@ ChF.test_fba(model, iJR.BIOMASS_IDER, iJR.COST_IDER)
 # FVA PREPROCESSING
 const BASE_MODELS = isfile(iJR.BASE_MODELS_FILE) ? 
     ChU.load_data(iJR.BASE_MODELS_FILE) : 
-    Dict{Any, Any}("base_model" => ChU.compressed_model(model))
+    Dict{Any, Any}("load_model" => ChU.compressed_model(model))
 
 ## -------------------------------------------------------------------
 let

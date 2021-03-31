@@ -16,6 +16,6 @@ end
 
 # FILES
 const MODEL_RAW_MAT_FILE = joinpath(MODEL_RAW_DIR, "e_coli_core.mat")
-const BASE_MODELS_FILE = joinpath(MODEL_PROCESSED_DATA_DIR, "base_model.bson")
+const BASE_MODELS_FILE = joinpath(MODEL_PROCESSED_DATA_DIR, "load_model.bson")
 const EXCH_MET_MAP_FILE = joinpath(MODEL_PROCESSED_DATA_DIR, "exch_met_map.bson")
 const MAXENT_RES_FILE = joinpath(MODEL_PROCESSED_DATA_DIR, "maxent_fba_ep_res.bson")
