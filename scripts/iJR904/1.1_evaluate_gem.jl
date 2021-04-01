@@ -25,17 +25,18 @@ quickactivate(@__DIR__, "Chemostat_Folsom2014")
 end
 
 ## ----------------------------------------------------------------------------
-BASE_MODELS = ChU.load_data(iJR.BASE_MODELS_FILE);
+MODELS_FILE = iJR.procdir("base_models.bson")
+BASE_MODELS = ChU.load_data(MODELS_FILE);
 fileid = "1.1"
 function mysavefig(p, pname; params...) 
-    fname = UJL.mysavefig(p, string(fileid, "_", pname), iJR.MODEL_FIGURES_DIR; params...)
+    fname = UJL.mysavefig(p, string(fileid, "_", pname), iJR.plotsdir(); params...)
     @info "Plotting" fname
 end
 
 ## ----------------------------------------------------------------------------
 # Biomass medium sensibility
 let
-    model = BASE_MODELS["load_model"]
+    model = BASE_MODELS["base_model"]
     obj_ider = iJR.BIOMASS_IDER
     xi = Fd.val("xi") |> minimum
     intake_info = iJR.load_base_intake_info()

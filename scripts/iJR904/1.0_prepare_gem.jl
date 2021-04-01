@@ -23,7 +23,7 @@ end
 
 ## ------------------------------------------------------------------
 # LOAD RAW MODEL
-src_file = iJR.MODEL_RAW_MAT_FILE
+src_file = iJR.rawdir("iJR904.mat")
 mat_model = MAT.matread(src_file)["model"]
 model = ChU.MetNet(mat_model; reshape=true)
 ChU.tagprintln_inmw("MAT MODEL LOADED", 
@@ -65,20 +65,6 @@ foreach(exchs) do idx
     ChU.ub!(model, idx, 0.0) # Closing all outtakes
     ChU.lb!(model, idx, 0.0) # Closing all intakes
 end
-
-## -------------------------------------------------------------------
-# # EXCHANGE METABOLITE MAP
-# exch_met_map = Dict()
-# for rxni in exchs
-#     rxn = model.rxns[rxni]
-#     metis = ChU.rxn_mets(model, rxni)
-#     mets = model.mets[metis]
-#     length(mets) != 1 && continue 
-#     met = mets |> first
-#     exch_met_map[rxn] = met
-#     exch_met_map[met] = rxn
-# end
-# ChU.save_data(iJR.EXCH_MET_MAP_FILE, exch_met_map)
 
 ## -------------------------------------------------------------------
 # ENZYMATIC COST INFO
@@ -170,9 +156,10 @@ ChF.test_fba(model, iJR.BIOMASS_IDER, iJR.COST_IDER)
 
 ## -------------------------------------------------------------------
 # FVA PREPROCESSING
-const BASE_MODELS = isfile(iJR.BASE_MODELS_FILE) ? 
-    ChU.load_data(iJR.BASE_MODELS_FILE) : 
-    Dict{Any, Any}("load_model" => ChU.compressed_model(model))
+MODELS_FILE = iJR.procdir("base_models.bson")
+const BASE_MODELS = isfile(MODELS_FILE) ? 
+    ChU.load_data(MODELS_FILE) : 
+    Dict{Any, Any}("base_model" => ChU.compressed_model(model))
 
 ## -------------------------------------------------------------------
 let
@@ -208,7 +195,7 @@ let
 
         ## -------------------------------------------------------------------
         # caching
-        ChU.save_data(iJR.BASE_MODELS_FILE, BASE_MODELS);
+        ChU.save_data(MODELS_FILE, BASE_MODELS);
         GC.gc()
     end
 end
@@ -260,5 +247,5 @@ let
     ## -------------------------------------------------------------------
     # saving
     BASE_MODELS["max_model"] = ChU.compressed_model(max_model)
-    ChU.save_data(iJR.BASE_MODELS_FILE, BASE_MODELS);
+    ChU.save_data(MODELS_FILE, BASE_MODELS)
 end;

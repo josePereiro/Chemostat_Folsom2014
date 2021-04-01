@@ -11,11 +11,11 @@ module Chemostat_Folsom2014
     import UtilsJL
     UtilsJL.gen_top_proj(@__MODULE__)
 
-    include("Utils/Utils.jl")
     include("FolsomData/FolsomData.jl")
+    include("Utils/Utils.jl")
     include("BegData/BegData.jl")
-    include("EColiCore/EColiCore.jl")
     include("iJR904/iJR904.jl")
+    # include("EColiCore/EColiCore.jl")
 
     function __init__()
         UtilsJL.create_proj_dirs(@__MODULE__)

@@ -1,7 +1,7 @@
 module FolsomData
 
-    import ..Chemostat_Folsom2014: 
-        PROCESSED_DATA_DIR, FIGURES_DATA_DIR
+    import ..Chemostat_Folsom2014
+    const ChF = Chemostat_Folsom2014
 
     import UtilsJL
     const UJL = UtilsJL
@@ -12,7 +12,7 @@ module FolsomData
     include("dir_and_files.jl")
 
     function __init__()
-        _create_dirs()
+        # _create_dirs()
         _populate_bundle()
         UJL.create_proj_dirs(@__MODULE__)
     end
