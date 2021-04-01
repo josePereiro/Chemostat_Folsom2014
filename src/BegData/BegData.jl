@@ -6,6 +6,14 @@ module BegData
     using DataFrames
     import CSV
 
+    import UtilsJL
+    const UJL = UtilsJL
+    UJL.gen_sub_proj(@__MODULE__)
+
+    function __init__()
+        UJL.create_proj_dirs(@__MODULE__)
+    end
+
     ## ------------------------------------------------------------------------
     # FILES AND DIRS
     const BEG_RAW_DATA_DIR = joinpath(ChF.RAW_DATA_DIR, "beg2007___data")

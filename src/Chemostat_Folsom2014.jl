@@ -8,6 +8,9 @@ module Chemostat_Folsom2014
     const ChSS = Ch.SteadyState
     const ChLP = Ch.LP
 
+    import UtilsJL
+    UtilsJL.gen_top_proj(@__MODULE__)
+
     include("Utils/Utils.jl")
     include("FolsomData/FolsomData.jl")
     include("BegData/BegData.jl")
@@ -15,7 +18,7 @@ module Chemostat_Folsom2014
     include("iJR904/iJR904.jl")
 
     function __init__()
-        _make_dirs()
+        UtilsJL.create_proj_dirs(@__MODULE__)
     end
 
 end

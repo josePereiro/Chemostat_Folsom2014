@@ -9,8 +9,10 @@ module iJR904
     const Fd = FolsomData
     import Chemostat
     const ChU = Chemostat.Utils
+
     import UtilsJL
     const UJL = UtilsJL
+    UJL.gen_sub_proj(@__MODULE__)
 
     include("const.jl")
     include("dirs_and_files.jl")
@@ -19,6 +21,7 @@ module iJR904
     include("load_model.jl")
     function __init__()
         _create_dirs()
+        UJL.create_proj_dirs(@__MODULE__)
     end
 
 end

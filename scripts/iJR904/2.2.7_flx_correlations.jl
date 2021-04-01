@@ -28,50 +28,58 @@ let
 end
 
 ## -------------------------------------------------------------------
-# total correlations
+# correlations
 let
-    dat_prefix = :flx
-    iders = FLX_IDERS
-    zoom_lim = [-0.5, 1.5]
-    
+
     tot_ps = Plots.Plot[]
-    zoom_ps = Plots.Plot[]
-    for method in ALL_METHODS                                       
-        ep_vals = DAT[method, :ep, dat_prefix, iders, EXPS]
-        ep_errs = DAT[method, :eperr, dat_prefix, iders, EXPS]
-        Fd_vals = DAT[method, :Fd, dat_prefix, iders, EXPS]
-        Fd_errs = DAT[method, :Fderr, dat_prefix, iders, EXPS]
-        
-        
-        diffsign = sign.(Fd_vals) .* sign.(ep_vals)
-        Fd_vals = abs.(Fd_vals) .* diffsign
-        ep_vals = abs.(ep_vals) .* diffsign
+    for method in ALL_METHODS        
+        # total corr
+        let            
+            ep_vals = DAT[method, :ep, :flx, FLX_IDERS, EXPS] .|> abs
+            ep_errs = DAT[method, :eperr, :flx, FLX_IDERS, EXPS] .|> abs
+            Fd_vals = DAT[method, :Fd, :flx, FLX_IDERS, EXPS] .|> abs
+            
+            color = [ider_colors[ider] for ider in FLX_IDERS, exp in EXPS]
+            scatter_params = (;label = "", color, ms = 7, alpha = 0.7)
+            # ep corr
+            p = plot(title = "$(iJR.PROJ_IDER) (EP) $method", 
+                ylabel = "model abs flx",
+                xlabel = "exp abs flx", 
+            )
+            scatter!(p, Fd_vals, ep_vals; yerr = ep_errs, scatter_params...)
+            all_vals = [ep_vals; Fd_vals] |> sort!
+            plot!(p, all_vals, all_vals; ls = :dash, color = :black, label = "")
+            push!(tot_ps, deepcopy(p))
+        end
 
-        color = [ider_colors[ider] for ider in iders, exp in EXPS]
-        m, M = myminmax([ep_vals; Fd_vals])
-
-
-        scatter_params = (;label = "", color, ms = 7, alpha = 0.7)
-        # ep corr
-        p1 = plot(title = "$(iJR.PROJ_IDER) (EP) $method", 
-            xlabel = "exp signdiff $(dat_prefix)", 
-            ylabel = "model signdiff $(dat_prefix)",
-        )
-        scatter!(p1, Fd_vals, ep_vals; yerr = ep_errs, xerr = Fd_errs, scatter_params...)
-        plot!(p1, [m,M], [m,M]; ls = :dash, color = :black, label = "")
-        push!(tot_ps, deepcopy(p1))
-        
-        p2 = plot!(p1; xlim = zoom_lim, ylim = zoom_lim)
-        push!(zoom_ps, deepcopy(p1))
-
+        # per ider
+        let       
+            for ider in FLX_IDERS
+                ep_vals = DAT[method, :ep, :flx, ider, EXPS] .|> abs
+                ep_errs = DAT[method, :eperr, :flx, ider, EXPS] .|> abs
+                Fd_vals = DAT[method, :Fd, :flx, ider, EXPS] .|> abs
+                
+                color = ider_colors[ider]
+                # ep corr
+                p = plot(title = "$(iJR.PROJ_IDER) (EP) $method", 
+                    ylabel = "model abs flx",
+                    xlabel = "exp abs flx", 
+                )
+                scatter!(p, Fd_vals, ep_vals; yerr = ep_errs, 
+                    label = "", color, ms = 7, alpha = 0.7
+                )
+                bounds = DAT[method, :bounds, :flx, ider, EXPS]
+                all_vals = [ep_vals; Fd_vals] |> sort!
+                plot!(p, all_vals, all_vals; 
+                    ls = :dash, color = :black, label = "", 
+                    # xlim = [lb, ub], ylim = [lb, ub]
+                )
+                mysavefig(p, "corr"; ider, method)
+            end
+        end
     end
 
     layout = (1, length(tot_ps))
-    pname = string(dat_prefix, "_tot_corr")
-    mysavefig(tot_ps, pname; layout)
-    
-    layout = (1, length(zoom_ps))
-    pname = string(dat_prefix, "_zoomed_corr")
-    mysavefig(zoom_ps, pname; layout)
+    mysavefig(tot_ps, "flx_tot_corr"; layout)
 
-end
+end 

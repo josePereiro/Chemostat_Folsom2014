@@ -2,6 +2,8 @@
 # folders
 data
 dev
+plots
+
 
 # Created by https://www.toptal.com/developers/gitignore/api/julia,macos,python,jupyternotebooks,code
 # Edit at https://www.toptal.com/developers/gitignore?templates=julia,macos,python,jupyternotebooks,code
