@@ -9,7 +9,8 @@ module Chemostat_Folsom2014
     const ChLP = Ch.LP
 
     import UtilsJL
-    UtilsJL.gen_top_proj(@__MODULE__)
+    const UJL = UtilsJL
+    UJL.gen_top_proj(@__MODULE__)
 
     include("FolsomData/FolsomData.jl")
     include("Utils/Utils.jl")
@@ -18,7 +19,7 @@ module Chemostat_Folsom2014
     # include("EColiCore/EColiCore.jl")
 
     function __init__()
-        UtilsJL.create_proj_dirs(@__MODULE__)
+        UJL.create_proj_dirs(@__MODULE__)
     end
 
 end

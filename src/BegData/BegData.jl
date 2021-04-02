@@ -10,10 +10,6 @@ module BegData
     const UJL = UtilsJL
     UJL.gen_sub_proj(@__MODULE__)
 
-    function __init__()
-        UJL.create_proj_dirs(@__MODULE__)
-    end
-
     ## ------------------------------------------------------------------------
     # FILES AND DIRS
     # const BEG_RAW_DATA_DIR = joinpath(ChF.RAW_DATA_DIR, "beg2007___data")
@@ -32,4 +28,7 @@ module BegData
     # https://doi.org/10.1073/pnas.0609845104.
     load_enz_data() = CSV.read(rawdir("beg2007___enzymatic_data.tsv"), DataFrame)
     
+    function __init__()
+        UJL.create_proj_dirs(@__MODULE__)
+    end
 end
