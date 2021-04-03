@@ -29,56 +29,37 @@ quickactivate(@__DIR__, "Chemostat_Folsom2014")
     const UJL = UtilsJL
     using Serialization
     using Base.Threads
-    UJL.set_cache_dir(iJR.MODEL_CACHE_DIR)
+    UJL.set_cache_dir(iJR.cachedir())
 end
 
 ## ----------------------------------------------------------------------------
 # globals
 const WLOCK = ReentrantLock()
-const SIM_GLOBAL_ID = "iJR904_MAXENT_VARIANTS"
-const DAT_FILE_PREFFIX =  "maxent_ep_dat_"
-
-const INDEX = UJL.DictTree()
-function dat_file(name; kwargs...)
-    fname = UJL.mysavename(name, "jls"; kwargs...)
-    joinpath(iJR.MODEL_PROCESSED_DATA_DIR, fname)
-end
-
-## ----------------------------------------------------------------------------
-function load_model(exp::Int, modelkey::String = "fva_models")
-    BASE_MODELS = ChU.load_data(iJR.BASE_MODELS_FILE; verbose = false);
-    model = BASE_MODELS[modelkey][exp]
-    model |> ChU.uncompressed_model
-end
-
-function load_model(modelkey::String = "max_model")
-    BASE_MODELS = ChU.load_data(iJR.BASE_MODELS_FILE; verbose = false);
-    model = BASE_MODELS[modelkey]
-    model |> ChU.uncompressed_model
-end
+const DAT_FILE_PREFFIX = "maxent_ep_dat"
 
 ## ----------------------------------------------------------------------------
 const ME_Z_OPEN_G_OPEN          = :ME_Z_OPEN_G_OPEN           # Do not use extra constraints
 const ME_MAX_POL                = :ME_MAX_POL                 # 
+const ME_MAX_POL_B0             = :ME_MAX_POL_B0                 # 
 const ME_Z_EXPECTED_G_EXPECTED  = :ME_Z_EXPECTED_G_EXPECTED    # Match ME and Dy biom average and constraint av_ug
 const ME_Z_EXPECTED_G_BOUNDED   = :ME_Z_EXPECTED_G_BOUNDED    # Match ME and Dy biom average and constraint av_ug
 const ME_Z_EXPECTED_G_MOVING    = :ME_Z_EXPECTED_G_MOVING     # 
 const ME_Z_FIXXED_G_BOUNDED     = :ME_Z_FIXXED_G_BOUNDED      # Fix biom around observed
 
 ## -------------------------------------------------------------------
-function check_cache(datfile, exp, method)
+function dat_file(;kwargs...)
+    fname = UJL.mysavename(DAT_FILE_PREFFIX, "jls"; kwargs...)
+    iJR.procdir(fname)
+end
+
+function check_cache(;kwargs...)
     thid = threadid()
-    if isfile(datfile)
-        lock(WLOCK) do
-            INDEX[method, :DFILE, exp] = datfile
-            @info("Cached loaded (skipping)",
-                exp, datfile, thid
-            )
-            println()
-        end
-        return true
-    end
-    return false
+    datfile = dat_file(;kwargs...)
+    isfile(datfile) && lock(WLOCK) do
+        @info("Cached loaded (skipping)",
+            datfile, thid
+        ); println()
+    end; isfile(datfile)
 end
 
 ## -------------------------------------------------------------------
@@ -104,6 +85,6 @@ include("2.0.1_ME_MAX_POL.jl")
 # # ME_Z_OPEN_G_OPEN
 # include("2.0.6_ME_Z_OPEN_G_OPEN.jl")
 
-# ## ----------------------------------------------------------------------------
-# save index
-ChU.save_data(iJR.MAXENT_VARIANTS_INDEX_FILE, INDEX; verbose = true)
+## ----------------------------------------------------------------------------
+# ME_MAX_POL_B0
+include("2.0.7_ME_MAX_POL_B0.jl")

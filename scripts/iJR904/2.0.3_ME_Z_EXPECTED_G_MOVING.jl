@@ -148,7 +148,7 @@ let
 
                 # caching
                 serialize(datfile, dat)
-                INDEX[method, :DFILE, exp] = datfile
+                
 
                 biom_avPME = ChU.av(epouts[expβ])[biomidx]
                 diff = abs.(exp_growth - biom_avPME)

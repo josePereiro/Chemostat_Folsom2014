@@ -53,7 +53,7 @@ let
         approach_status = get!(dat, :approach_status, :running)
         if approach_status == :finished 
             lock(WLOCK) do
-                INDEX[method, :DFILE, exp] = datfile
+                
             end
             continue
         end
@@ -134,7 +134,7 @@ let
 
         # saving
         lock(WLOCK) do
-            INDEX[method, :DFILE, exp] = datfile
+            
             dat[:approach_status] = :finished
             dat[:model] = model |> ChU.compressed_model
             dat[:exp_beta] = maximum(keys(epouts))

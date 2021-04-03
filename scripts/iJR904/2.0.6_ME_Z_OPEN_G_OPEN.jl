@@ -6,12 +6,11 @@ let
     @threads for (exp, D) in iterator
 
         # handle cache
-        datfile = dat_file(DAT_FILE_PREFFIX; exp, method)
-        check_cache(datfile, exp, method) || continue
+        datfile = dat_file(;exp, method)
+        # check_cache(;exp, method) && continue
 
         # setup
-        model = load_model(exp)
-        biomidx = ChU.rxnindex(model, objider)
+        model = iJR.load_model("fva_models", exp)
 
         lock(WLOCK) do
             @info("Doing... ", 
@@ -30,12 +29,12 @@ let
         lock(WLOCK) do
             # Storing
             dat = Dict()
+            dat[:exp_beta] = 0.0
             dat[:epouts] = Dict(0.0 => epout)
             dat[:model] = model |> ChU.compressed_model
 
             # caching
             serialize(datfile, dat)
-            INDEX[method, :DFILE, exp] = datfile
 
             @info("Finished ", exp, threadid())
             println()

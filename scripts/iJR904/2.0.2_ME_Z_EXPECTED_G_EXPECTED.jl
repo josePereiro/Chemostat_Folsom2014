@@ -178,7 +178,7 @@ let
 
                 # caching
                 serialize(datfile, dat)
-                INDEX[method, :DFILE, exp] = datfile
+                
 
                 @info("Finished ",
                     exp, 
