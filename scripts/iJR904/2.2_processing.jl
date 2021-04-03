@@ -71,8 +71,8 @@ end
 myminmax(a::Vector) = (minimum(a), maximum(a))
 FLX_IDERS = ["GLC", "PYR", "SUCC", "LAC", "FORM", "AC", "O2", "CO2"]
 
-Fd_rxns_map = iJR.load_Fd_rxns_map()
-Fd_mets_map = iJR.load_Fd_mets_map()
+Fd_rxns_map = iJR.load_rxns_map()
+Fd_mets_map = iJR.load_mets_map()
 
 ## -------------------------------------------------------------------
 # collect DAT

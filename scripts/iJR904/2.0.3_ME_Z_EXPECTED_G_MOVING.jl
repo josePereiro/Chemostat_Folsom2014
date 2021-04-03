@@ -35,7 +35,7 @@ let
             end
 
             cgD_X = -Fd.cval(:GLC, exp) * Fd.val(:D, exp) / Fd.val(:X, exp)
-            exglc_L = ChU.lb(model, iJR.GLC_EX_IDER)
+            exglc_L = ChU.lb(model, iJR.EX_GLC_IDER)
             exglc_qta = abs(exglc_L * 0.005)
             expβ = 0.0
             vg_avPME = 0.0
@@ -73,7 +73,7 @@ let
                     )
 
                     biom_avPME = ChU.av(model, epout, iJR.BIOMASS_IDER)
-                    vg_avPME = ChU.av(model, epout, iJR.GLC_EX_IDER)
+                    vg_avPME = ChU.av(model, epout, iJR.EX_GLC_IDER)
         
                     update = gdit == 1 || abs(last_uptime - time()) > upfrec_time || 
                         epout.status != ChEP.CONVERGED_STATUS
@@ -106,7 +106,7 @@ let
                 ## -------------------------------------------------------------------
                 # MOVE V_UB
                 Δstep = 0.5
-                exglc_lb, exglc_ub = ChU.bounds(model, iJR.GLC_EX_IDER)
+                exglc_lb, exglc_ub = ChU.bounds(model, iJR.EX_GLC_IDER)
 
                 # lb is the uptake limit
                 dist = cgD_X - vg_avPME
@@ -116,7 +116,7 @@ let
                         max(exglc_L, exglc_lb + Δexglc_lb)
                     )
                 )
-                ChU.lb!(model, iJR.GLC_EX_IDER, exglc_lb)
+                ChU.lb!(model, iJR.EX_GLC_IDER, exglc_lb)
                 
                 ## -------------------------------------------------------------------
                 # INFO AND CONV

@@ -81,8 +81,8 @@ LP_DAT_FILE = iJR.procdir("lp_dat_file.bson")
 LP_DAT = ChU.load_data(LP_DAT_FILE; verbose = false);
 
 ## ----------------------------------------------------------------------------------
-Fd_mets_map = iJR.load_Fd_mets_map()
-Fd_rxns_map = iJR.load_Fd_rxns_map();
+Fd_mets_map = iJR.load_mets_map()
+Fd_rxns_map = iJR.load_rxns_map();
 
 ## ----------------------------------------------------------------------------------
 # COMMON DAT
@@ -117,7 +117,7 @@ let
             fva_lb, fva_ub = ChU.bounds(fva_model, model_exch)
             lb = max(max_lb, fva_lb)
             ub = min(max_ub, fva_ub)
-            DAT[:bounds, model_exch, exp] = (lb, ub)
+            DAT[:bounds, Fd_ider, exp] = (lb, ub)
 
         end
     end

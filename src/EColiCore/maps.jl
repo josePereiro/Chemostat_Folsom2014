@@ -6,7 +6,7 @@
 # data and the model
 
 
-function load_Fd_mets_map() 
+function load_mets_map() 
     Fd_mets_map = Dict()
     Fd_mets_map["GLC"] = "glc__D_e"
     Fd_mets_map["AC"] = "ac_e"

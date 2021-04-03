@@ -75,8 +75,8 @@ ALL_METHODS = [
     FBA_Z_VG_FIX_MIN_COST
 ]
 
-Fd_mets_map = iJR.load_Fd_mets_map()
-Fd_rxns_map = iJR.load_Fd_rxns_map()
+Fd_mets_map = iJR.load_mets_map()
+Fd_rxns_map = iJR.load_rxns_map()
 
 ## -----------------------------------------------------------------------------------------------
 # correlations

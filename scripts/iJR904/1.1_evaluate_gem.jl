@@ -94,8 +94,8 @@ let
         fbaout = ChLP.fba(model, iJR.BIOMASS_IDER, iJR.COST_IDER);
         fba_obj_val = ChU.av(model, fbaout, iJR.BIOMASS_IDER)
         fba_obj_val = ChU.av(model, fbaout, iJR.BIOMASS_IDER)
-        fba_ex_glc_val = ChU.av(model, fbaout, iJR.GLC_EX_IDER)
-        fba_ex_glc_b = ChU.bounds(model, iJR.GLC_EX_IDER)
+        fba_ex_glc_val = ChU.av(model, fbaout, iJR.EX_GLC_IDER)
+        fba_ex_glc_b = ChU.bounds(model, iJR.EX_GLC_IDER)
         exp_obj_val = Fd.val("D", exp)
 
         ChU.tagprintln_inmw("FBA SOLUTION", 
@@ -128,7 +128,7 @@ let
         
         function work_fun(cGLC)
             ## Open intakes except Glucose
-            intake_info[iJR.GLC_EX_IDER]["c"] = first(cGLC)
+            intake_info[iJR.EX_GLC_IDER]["c"] = first(cGLC)
             
             # impose constraint
             ChSS.apply_bound!(model, xi, intake_info; emptyfirst = true)

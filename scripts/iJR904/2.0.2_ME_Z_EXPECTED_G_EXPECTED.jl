@@ -30,7 +30,7 @@ let
             model =  load_model("max_model")
             M, N = size(model)
             biomidx = ChU.rxnindex(model, iJR.BIOMASS_IDER)
-            glcidx = ChU.rxnindex(model, iJR.GLC_EX_IDER)
+            glcidx = ChU.rxnindex(model, iJR.EX_GLC_IDER)
             exp_growth = Fd.val("D", exp)
             biom_lb, biom_ub = ChU.bounds(model, iJR.BIOMASS_IDER)
             if biom_ub < exp_growth
@@ -107,7 +107,7 @@ let
                     )
 
                     biom_avPME = ChU.av(model, epout, iJR.BIOMASS_IDER)
-                    vg_avPME = ChU.av(model, epout, iJR.GLC_EX_IDER)
+                    vg_avPME = ChU.av(model, epout, iJR.EX_GLC_IDER)
                     biom_diff = abs(biom_avPME - exp_growth)
                     vg_diff = abs(vg_avPME - cgD_X)
 

@@ -216,7 +216,7 @@ let
     # 2.2 1/ h
     ChU.bounds!(max_model, iJR.BIOMASS_IDER, 0.0, 2.2)
     
-    Fd_rxns_map = iJR.load_Fd_rxns_map() 
+    Fd_rxns_map = iJR.load_rxns_map() 
     # 40 mmol / gDW h
     ChU.bounds!(max_model, Fd_rxns_map["GLC"], -40.0, 0.0)
     # 45 mmol/ gDW
@@ -237,7 +237,7 @@ let
     for exp in 1:4
         D = Fd.val(:D, exp)
         cgD_X = Fd.cval(:GLC, exp) * Fd.val(:D, exp) / Fd.val(:X, exp)
-        ChU.lb!(test_model, iJR.GLC_EX_IDER, -cgD_X)
+        ChU.lb!(test_model, iJR.EX_GLC_IDER, -cgD_X)
         fbaout = ChLP.fba(test_model, iJR.BIOMASS_IDER, iJR.COST_IDER)
         biom = ChU.av(test_model, fbaout, iJR.BIOMASS_IDER)
         cost = ChU.av(test_model, fbaout, iJR.COST_IDER)
