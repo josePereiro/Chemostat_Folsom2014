@@ -29,7 +29,9 @@ end
 
 ## -----------------------------------------------------------------------------------------------
 const FBA_Z_FIX_MAX_VG_MIN_COST = :FBA_Z_FIX_MAX_VG_MIN_COST
+const FBA_Z_FIX_MIN_VG_MIN_COST = :FBA_Z_FIX_MIN_VG_MIN_COST
 const FBA_Z_FIX_MAX_VG_MAX_COST = :FBA_Z_FIX_MAX_VG_MAX_COST
+const FBA_Z_FIX_MIN_VG_MAX_COST = :FBA_Z_FIX_MIN_VG_MAX_COST
 const FBA_Z_VG_FIX_MAX_COST = :FBA_Z_VG_FIX_MAX_COST
 const FBA_Z_VG_FIX_MIN_COST = :FBA_Z_VG_FIX_MIN_COST
 const FBA_Z_FIX_MAX_COST = :FBA_Z_FIX_MAX_COST
@@ -55,6 +57,46 @@ let
     for exp in EXPS
 
         @info("Doing ", exp); println()
+        
+        # FBA_Z_FIX_MIN_VG_MIN_COST
+        let
+            model = iJR.load_model("fva_models", exp)
+
+            # fix Z
+            exp_growth = Fd.val("D", exp)
+            ChU.bounds!(model, objider, exp_growth, exp_growth)
+            
+            # min vg
+            fbaout1 = ChLP.fba(model, exglcider; sense = min_sense)
+            exglc = ChU.av(model, fbaout1, exglcider)
+            ChU.bounds!(model, exglcider, exglc, exglc)
+
+            # min cost
+            fbaout = ChLP.fba(model, costider; sense = min_sense)
+
+            LPDAT[FBA_Z_FIX_MIN_VG_MIN_COST, :model, exp] = ChU.compressed_model(model)
+            LPDAT[FBA_Z_FIX_MIN_VG_MIN_COST, :fbaout, exp] = fbaout
+        end
+
+        # FBA_Z_FIX_MIN_VG_MAX_COST
+        let
+            model = iJR.load_model("fva_models", exp)
+
+            # fix Z
+            exp_growth = Fd.val("D", exp)
+            ChU.bounds!(model, objider, exp_growth, exp_growth)
+            
+            # min vg
+            fbaout1 = ChLP.fba(model, exglcider; sense = min_sense)
+            exglc = ChU.av(model, fbaout1, exglcider)
+            ChU.bounds!(model, exglcider, exglc, exglc)
+
+            # max cost
+            fbaout = ChLP.fba(model, costider; sense = max_sense)
+
+            LPDAT[FBA_Z_FIX_MIN_VG_MAX_COST, :model, exp] = ChU.compressed_model(model)
+            LPDAT[FBA_Z_FIX_MIN_VG_MAX_COST, :fbaout, exp] = fbaout
+        end
 
         # FBA_Z_FIX_MAX_VG_MIN_COST
         let
@@ -200,7 +242,6 @@ let
 
     end
 end
-
 ## -------------------------------------------------------------------
 LP_DAT_FILE = iJR.procdir("lp_dat_file.bson")
 ChU.save_data(LP_DAT_FILE, LPDAT)
