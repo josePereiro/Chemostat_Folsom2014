@@ -1,6 +1,36 @@
 import DrWatson: quickactivate
 quickactivate(@__DIR__, "Chemostat_Folsom2014")
 
+# ----------------------------------------------------------------------------
+## ARGS
+using ArgParse
+
+set = ArgParseSettings()
+@add_arg_table! set begin
+    "--new-dat"
+        help = "ignore disk stored DAT"   
+        action = :store_true
+    "--skip-me"
+        help = "do not recompute MaxEnt part"   
+        action = :store_true
+    "--skip-lp"
+        help = "do not recompute LP part"   
+        action = :store_true
+end
+
+if isinteractive()
+    # Dev values
+    new_dat = false
+    skip_lp = false
+    skip_me = false
+else
+    parsed_args = parse_args(set)
+    new_dat = parsed_args["new-dat"]
+    skip_lp = parsed_args["skip-lp"]
+    skip_me = parsed_args["skip-me"]
+end
+
+# ----------------------------------------------------------------------------
 @time begin
     import SparseArrays
     import Base.Threads: @threads, threadid, SpinLock
@@ -30,8 +60,10 @@ quickactivate(@__DIR__, "Chemostat_Folsom2014")
     using Base.Threads
 end
 
-# ----------------------------------------------------------------------------------
-DAT = ChU.DictTree();
+## ----------------------------------------------------------------------------------
+# setup container
+DAT_FILE = iJR.procdir("dat.bson")
+DAT = (!isfile(DAT_FILE) || new_dat) ? ChU.DictTree() : UJL.load_data(DAT_FILE)
 
 # ----------------------------------------------------------------------------------
 FLX_IDERS = ["GLC", "SUCC", "AC", "FORM"]
@@ -136,7 +168,7 @@ end
 
 ## ----------------------------------------------------------------------------------
 # MAXENT DAT
-let 
+!skip_me && let 
     WLOCK = ReentrantLock()
     objider = iJR.BIOMASS_IDER
 
@@ -238,7 +270,7 @@ end
 
 ## ----------------------------------------------------------------------------------
 # LP DAT
-let
+!skip_fba && let 
     objider = iJR.BIOMASS_IDER
 
     for method in LP_METHODS
