@@ -124,8 +124,8 @@ let
             # max cost
             fbaout = ChLP.fba(model, costider; sense = max_sense)
      
-            LPDAT[FBA_MAX_Z_MIN_COST, :model, exp] = model
-            LPDAT[FBA_MAX_Z_MIN_COST, :fbaout, exp] = fbaout
+            LPDAT[:FBA_MAX_Z_MAX_COST, :model, exp] = model
+            LPDAT[:FBA_MAX_Z_MAX_COST, :fbaout, exp] = fbaout
         end
 
         # FBA_Z_FIX_MIN_COST
@@ -169,7 +169,7 @@ let
             ChU.bounds!(model, objider, exp_growth, exp_growth)
 
             # fix vg
-            exp_exglc = Fd.uval("GLC", exp)
+            exp_exglc = -abs(Fd.uval("GLC", exp))
             ChU.bounds!(model, exglcider, exp_exglc, exp_exglc)
 
             # min cost
@@ -188,7 +188,7 @@ let
             ChU.bounds!(model, objider, exp_growth, exp_growth)
 
             # fix vg
-            exp_exglc = Fd.uval("GLC", exp)
+            exp_exglc = -abs(Fd.uval("GLC", exp))
             ChU.bounds!(model, exglcider, exp_exglc, exp_exglc)
 
             # max cost

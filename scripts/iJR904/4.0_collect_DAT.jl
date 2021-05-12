@@ -270,7 +270,7 @@ end
 
 ## ----------------------------------------------------------------------------------
 # LP DAT
-!skip_fba && let 
+!skip_lp && let 
     objider = iJR.BIOMASS_IDER
 
     for method in LP_METHODS
