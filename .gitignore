@@ -3,6 +3,7 @@
 data
 dev
 plots
+*DEPRECATED
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/julia,macos,python,jupyternotebooks,code

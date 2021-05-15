@@ -214,7 +214,7 @@ function load_krebs_iders()
     ]
 end
 
-function load_kreps_idermap()
+function load_inners_idermap()
     kreps_idermap = Dict(
         "SUCD1" => ["SUCD1i"], 
         "SUCOAS" => ["SUCOAS_fwd", "SUCOAS_bkwd"], 

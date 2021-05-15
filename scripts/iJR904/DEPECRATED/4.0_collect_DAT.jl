@@ -248,7 +248,7 @@ end
             end
 
             # additional fluxs
-            for (ider, model_iders) in iJR.load_kreps_idermap()
+            for (ider, model_iders) in iJR.load_inners_idermap()
                 # flxs
                 ep_av = ChU.av(model, epout, model_iders[1])
                 ep_std = sqrt(ChU.va(model, epout, model_iders[1]))
@@ -296,7 +296,7 @@ end
             end
 
             # additional fluxs
-            for (ider, model_iders) in iJR.load_kreps_idermap()
+            for (ider, model_iders) in iJR.load_inners_idermap()
                 # flxs
                 fba_flx = ChU.av(model, fbaout, model_iders[1])
                 if length(model_iders) == 2 # reversible
