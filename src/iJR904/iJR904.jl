@@ -10,19 +10,17 @@ module iJR904
     import Chemostat
     const ChU = Chemostat.Utils
 
-    import UtilsJL
-    const UJL = UtilsJL
-    UJL.gen_sub_proj(@__MODULE__)
+    using ProjAssistant
+    @gen_sub_proj
 
     include("const.jl")
-    include("dirs_and_files.jl")
     include("load_data.jl")
     include("beg_enz_cost.jl")
     include("load_model.jl")
+    include("ME_MODES.jl")
     
     function __init__()
-        # _create_dirs()
-        UJL.create_proj_dirs(@__MODULE__)
+        @create_proj_dirs
     end
 
 end

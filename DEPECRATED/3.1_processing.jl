@@ -28,7 +28,7 @@ quickactivate(@__DIR__, "Chemostat_Folsom2014")
     import FileIO
     using Plots
     import GR
-    GR.inline("png")
+    !isinteractive() && GR.inline("png")
 end
 
 ## -----------------------------------------------------------------------------------------------

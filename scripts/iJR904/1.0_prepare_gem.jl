@@ -1,6 +1,7 @@
-import DrWatson: quickactivate
-quickactivate(@__DIR__, "Chemostat_Folsom2014")
+using ProjAssistant
+@quickactivate 
 
+# ------------------------------------------------------------------
 @time begin
     import MAT
 
@@ -23,7 +24,7 @@ end
 
 ## ------------------------------------------------------------------
 # LOAD RAW MODEL
-src_file = iJR.rawdir("iJR904.mat")
+src_file = rawdir(iJR, "iJR904.mat")
 mat_model = MAT.matread(src_file)["model"]
 model = ChU.MetNet(mat_model; reshape=true)
 ChU.tagprintln_inmw("MAT MODEL LOADED", 
@@ -156,10 +157,10 @@ ChF.test_fba(model, iJR.BIOMASS_IDER, iJR.COST_IDER)
 
 ## -------------------------------------------------------------------
 # FVA PREPROCESSING
-MODELS_FILE = iJR.procdir("base_models.bson")
-const BASE_MODELS = isfile(MODELS_FILE) ? 
-    ChU.load_data(MODELS_FILE) : 
+MODELS_FILE = procdir(iJR, "base_models.bson")
+const BASE_MODELS = ldat(MODELS_FILE) do
     Dict{Any, Any}("base_model" => ChU.compressed_model(model))
+end
 
 ## -------------------------------------------------------------------
 let
@@ -195,7 +196,7 @@ let
 
         ## -------------------------------------------------------------------
         # caching
-        ChU.save_data(MODELS_FILE, BASE_MODELS);
+        sdat(BASE_MODELS, MODELS_FILE);
         GC.gc()
     end
 end
@@ -247,5 +248,5 @@ let
     ## -------------------------------------------------------------------
     # saving
     BASE_MODELS["max_model"] = ChU.compressed_model(max_model)
-    ChU.save_data(MODELS_FILE, BASE_MODELS)
-end;
+    sdat(BASE_MODELS, MODELS_FILE)
+end

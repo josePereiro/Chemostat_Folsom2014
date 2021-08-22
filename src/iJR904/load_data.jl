@@ -179,7 +179,7 @@ end
 ## ------------------------------------------------------------------
 # base model exch met map
 # A quick way to get exchages from mets and te other way around
-load_exch_met_map() = UJL.load_data(procdir("exch_met_map.bson"); verbose=false)
+load_exch_met_map() = lprocdir(iJR904, "exch_met_map.bson"; verbose = false)
 
 ## ------------------------------------------------------------------
 # The intakes bounds of the network are determined by the 

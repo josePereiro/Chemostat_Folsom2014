@@ -1,6 +1,7 @@
-import DrWatson: quickactivate
-quickactivate(@__DIR__, "Chemostat_Folsom2014")
+using ProjAssistant
+@quickactivate 
 
+# ------------------------------------------------------------------
 @time begin
     using MAT
 
@@ -16,27 +17,24 @@ quickactivate(@__DIR__, "Chemostat_Folsom2014")
     const iJR = ChF.iJR904
     const Fd = ChF.FolsomData # experimental data
 
-    import UtilsJL
-    const UJL = UtilsJL
+    using SimTools
+    const SimT = SimTools
 
     using ProgressMeter
     using Plots
+    import GR
+    !isinteractive() && GR.inline("png")
     import SparseArrays
 end
 
 ## ----------------------------------------------------------------------------
-MODELS_FILE = iJR.procdir("base_models.bson")
-BASE_MODELS = ChU.load_data(MODELS_FILE);
-fileid = "1.1"
-function mysavefig(p, pname; params...) 
-    fname = UJL.mysavefig(p, string(fileid, "_", pname), iJR.plotsdir(); params...)
-    @info "Plotting" fname
-end
+MODELS_FILE = procdir(iJR, "base_models.bson")
+BASE_MODELS = ldat(MODELS_FILE);
 
 ## ----------------------------------------------------------------------------
 # Biomass medium sensibility
 let
-    model = BASE_MODELS["base_model"]
+    model = BASE_MODELS["max_model"]
     obj_ider = iJR.BIOMASS_IDER
     xi = Fd.val("xi") |> minimum
     intake_info = iJR.load_base_intake_info()
@@ -80,7 +78,9 @@ let
         plot!(p, factors, res; label = lb_, lw = 3)
         lcount -= 1
     end
-    mysavefig(p, "medium_sesitivity_study")
+    sfig(p, 
+        @fileid, "medium_sesitivity_study", ".png"
+    )
 end
 
 ## ----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ let
         Kd_cGLC = Fd.val(:cGLC, Di)
         Kd_growth = Fd.val(:D, Di)
         xi = Fd.val(:xi, Di)
-        model = ChU.load_data(iJR.BASE_MODEL_FILE; verbose = false)
+        model = BASE_MODELS["max_model"]
         intake_info = iJR.load_base_intake_info()
         for (exch, info) in intake_info
             info["c"] = iJR.MAX_CONC # open medium
@@ -139,7 +139,7 @@ let
             return [fba_growth]
         end
 
-        cGLC = ChSU.grad_desc(work_fun; x0 = [Kd_cGLC], x1 = [Kd_cGLC * 0.9], th = 1e-5, 
+        cGLC = SimT.grad_desc(work_fun; x0 = [Kd_cGLC], x1 = [Kd_cGLC * 0.9], th = 1e-5, 
             C = [Kd_cGLC * 0.1], target = [Kd_growth], maxiters = 500) |> first
         @info "Results" Di Kd_cGLC cGLC
     end
@@ -149,7 +149,7 @@ end
 ## ----------------------------------------------------------------------------
 # Testing scaled model
 let
-    model = ChU.load_data(iJR.BASE_MODEL_FILE; verbose = false)
+    model = BASE_MODELS["max_model"]
     fbaout = ChLP.fba(model, iJR.BIOMASS_IDER, iJR.COST_IDER);
     ChU.tagprintln_inmw("FBA SOLUTION", 
         "\nobj_ider:         ", iJR.BIOMASS_IDER,

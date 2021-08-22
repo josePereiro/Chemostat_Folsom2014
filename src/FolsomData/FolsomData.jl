@@ -1,20 +1,13 @@
 module FolsomData
 
-    import ..Chemostat_Folsom2014
-    const ChF = Chemostat_Folsom2014
-
-    import UtilsJL
-    const UJL = UtilsJL
-    UJL.gen_sub_proj(@__MODULE__)
-    
+    using ProjAssistant
+    @gen_sub_proj
     
     include("data.jl")
-    include("dir_and_files.jl")
 
     function __init__()
-        # _create_dirs()
         _populate_bundle()
-        UJL.create_proj_dirs(@__MODULE__)
+        @create_proj_dirs
     end
 
 end

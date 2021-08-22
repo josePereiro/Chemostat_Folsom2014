@@ -1,24 +1,16 @@
-import DrWatson: quickactivate
-quickactivate(@__DIR__, "Chemostat_Folsom2014")
+using ProjAssistant
+@quickactivate 
 
+# ------------------------------------------------------------------
 @time begin
 
     import Chemostat_Folsom2014
     const ChF = Chemostat_Folsom2014
-
     const Fd = ChF.FolsomData # experimental data
 
-    import UtilsJL
-    const UJL = UtilsJL
-
     using Plots
-end
-
-## -------------------------------------------------------------------
-fileid = "1.1"
-function mysavefig(p, pname; params...) 
-    fname = UJL.mysavefig(p, string(fileid, "_", pname), Fd.FOLSOM_FIGURES_DIR; params...)
-    @info "Plotting" fname
+    import GR
+    !isinteractive() && GR.inline("png")
 end
 
 ## -------------------------------------------------------------------
@@ -35,7 +27,9 @@ let
     scatter!(p, Fd.val(:D), Fd.val(:X); 
         label = "", m = 8, color = :black
     )
-    mysavefig(p, "X_vs_D") 
+    sfig(Fd, p, 
+        @fileid, "X_vs_D", ".png"
+    ) 
 end
 
 ## -------------------------------------------------------------------
@@ -63,5 +57,7 @@ let
         )
         push!(ps, p)
     end
-    mysavefig(ps, "Balances") 
+    sfig(Fd, ps, 
+        @fileid, "Balances", ".png"
+    ) 
 end

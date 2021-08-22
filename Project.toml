@@ -15,11 +15,11 @@ DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
 GR = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
 MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-UtilsJL = "1d417f3e-fd42-11ea-18da-dda57c9b97b2"
+ProjAssistant = "df388e3e-013c-4f8d-ba67-f4afa1ff006b"
+SimTools = "d690c95a-5dbf-4f48-8541-cd6f672b0d00"
 
 [compat]
-Chemostat = "0.10"
-UtilsJL = "0.7"
+Chemostat = ">= 0.9"
 julia = "1.5"
 
 [extras]

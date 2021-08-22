@@ -1,14 +1,11 @@
 # Beg et al. (2007): https://doi.org/10.1073/pnas.0609845104.
 module BegData
-
-    import ..Chemostat_Folsom2014
-    const ChF = Chemostat_Folsom2014
+    
     using DataFrames
     import CSV
 
-    import UtilsJL
-    const UJL = UtilsJL
-    UJL.gen_sub_proj(@__MODULE__)
+    using ProjAssistant
+    @gen_sub_proj
 
     ## ------------------------------------------------------------------------
     # FILES AND DIRS
@@ -26,9 +23,9 @@ module BegData
     ## ------------------------------------------------------------------------
     # enzymatic costs from Beg et al. (2007): 
     # https://doi.org/10.1073/pnas.0609845104.
-    load_enz_data() = CSV.read(rawdir("beg2007___enzymatic_data.tsv"), DataFrame)
+    load_enz_data() = CSV.read(rawdir(BegData, "beg2007___enzymatic_data.tsv"), DataFrame)
     
     function __init__()
-        UJL.create_proj_dirs(@__MODULE__)
+        @create_proj_dirs
     end
 end
