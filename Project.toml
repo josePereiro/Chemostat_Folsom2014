@@ -1,7 +1,7 @@
 name = "Chemostat_Folsom2014"
 uuid = "00d3f078-7623-4eb4-9094-80f290b0a20e"
 authors = ["josePereiro <jose.pereiro.lab@gmail.com> and contributors"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
